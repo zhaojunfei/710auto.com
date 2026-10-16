@@ -75,6 +75,12 @@ mvn -DskipTests clean package && java -jar target/auto710-backend.jar
 
 默认端口 `8080`，接口文档：`http://localhost:8080/swagger-ui.html`。
 
+> **本机使用 `auto710` 库/账号时**：仓库已忽略 `backend/src/main/resources/application-local.yml`
+> （含本机数据库账号密码，不入库）。用 local profile 启动即可：
+> ```bash
+> java -jar target/auto710-backend.jar --spring.profiles.active=local
+> ```
+
 ### 2. 前端本地运行
 
 ```bash

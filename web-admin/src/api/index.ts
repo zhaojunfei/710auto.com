@@ -74,3 +74,17 @@ export const fileApi = {
   uploadUrl: '/api/admin/file/upload',
   remove: (key: string) => request.delete('/admin/file', { params: { key } })
 }
+
+/** 预约管理（确认 / 取消 / 到店接车 / 剩余产能） */
+export const appointmentApi = {
+  confirm: (id: number) => request.post(`/admin/appointments/${id}/confirm`),
+  cancel: (id: number, reason?: string) => request.post(`/admin/appointments/${id}/cancel`, null, { params: { reason } }),
+  receive: (id: number, data: any) => request.post(`/admin/appointments/${id}/receive`, data),
+  remainCapacity: (params: { storeId?: number; date?: string }) => request.get('/admin/appointments/remain-capacity', { params })
+}
+
+/** 退款审核 */
+export const refundApi = {
+  audit: (refundId: number, pass: boolean, remark?: string) =>
+    request.post(`/admin/work-order/refund/${refundId}/audit`, null, { params: { pass, remark } })
+}

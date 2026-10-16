@@ -494,6 +494,38 @@ const TABLES = [
       ['cancel_reason', 'varchar(255)', '取消原因'],
       ['confirm_time', 'datetime', '确认时间'],
     ],
+    implExtra: `
+    @Override
+    public boolean save(Appointment entity) {
+        encode(entity, true);
+        return super.save(entity);
+    }
+
+    @Override
+    public boolean updateById(Appointment entity) {
+        encode(entity, false);
+        return super.updateById(entity);
+    }
+
+    /**
+     * 新增补全单号/默认状态；车牌与手机号加密入库（已是密文则跳过，避免二次加密）。
+     * 后台「预约管理」与会员端下单共用同一 Service，保证两条写入路径行为一致。
+     */
+    private void encode(Appointment entity, boolean insert) {
+        if (insert && cn.hutool.core.util.StrUtil.isBlank(entity.getAppointmentNo())) {
+            entity.setAppointmentNo(com.auto710.common.util.IdGenUtil.appointmentNo());
+        }
+        if (insert && cn.hutool.core.util.StrUtil.isBlank(entity.getStatus())) {
+            entity.setStatus(com.auto710.common.constant.AppointmentStatus.WAIT_CONFIRM);
+        }
+        if (!com.auto710.common.util.EncryptUtil.isEncrypted(entity.getPlateNo())) {
+            entity.setPlateNo(com.auto710.common.util.EncryptUtil.encrypt(entity.getPlateNo()));
+        }
+        if (!com.auto710.common.util.EncryptUtil.isEncrypted(entity.getContactPhone())) {
+            entity.setContactPhone(com.auto710.common.util.EncryptUtil.encrypt(entity.getContactPhone()));
+        }
+    }
+`,
   },
   {
     t: 'work_order', c: '维修工单', uk: ['order_no'], idx: ['member_id', 'status', 'technician_id'],
@@ -724,12 +756,45 @@ const TABLES = [
   {
     t: 'part_supplier', c: '配件供应商',
     f: [
+      ['user_id', 'bigint', '关联系统用户ID(供应商端登录账号)'],
       ['supplier_name', 'varchar(128)', '供应商名称'],
       ['contact_name', 'varchar(64)', '联系人'],
       ['phone', 'varchar(64)', '联系电话'],
       ['address', 'varchar(255)', '地址'],
       ['remark', 'varchar(255)', '备注'],
       ['status', 'tinyint', '状态 1启用 0禁用'],
+    ],
+  },
+  {
+    t: 'supplier_delivery', c: '供应商送货单', uk: ['delivery_no'], idx: ['supplier_id', 'status'],
+    f: [
+      ['delivery_no', 'varchar(32)', '送货单号'],
+      ['supplier_id', 'bigint', '供应商ID'],
+      ['supplier_name', 'varchar(128)', '供应商名称'],
+      ['store_id', 'bigint', '收货门店ID'],
+      ['item_count', 'int', '明细条数'],
+      ['total_amount', 'decimal(12,2)', '合计金额'],
+      ['expect_date', 'varchar(16)', '预计到货日期'],
+      ['status', 'varchar(16)', '状态 待确认/已入库/已拒绝'],
+      ['submit_time', 'datetime', '提交时间'],
+      ['confirm_user_id', 'bigint', '确认人ID'],
+      ['confirm_time', 'datetime', '确认时间'],
+      ['confirm_remark', 'varchar(255)', '确认备注'],
+      ['remark', 'varchar(255)', '备注'],
+    ],
+  },
+  {
+    t: 'supplier_delivery_item', c: '供应商送货明细', idx: ['delivery_id', 'part_id'],
+    f: [
+      ['delivery_id', 'bigint', '送货单ID'],
+      ['part_id', 'bigint', '配件ID'],
+      ['part_name', 'varchar(128)', '配件名称'],
+      ['spec', 'varchar(128)', '规格型号'],
+      ['unit', 'varchar(16)', '单位'],
+      ['quantity', 'int', '数量'],
+      ['unit_price', 'decimal(10,2)', '单价'],
+      ['amount', 'decimal(12,2)', '金额'],
+      ['remark', 'varchar(255)', '备注'],
     ],
   },
 

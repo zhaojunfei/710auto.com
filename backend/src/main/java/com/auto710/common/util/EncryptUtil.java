@@ -51,14 +51,33 @@ public class EncryptUtil {
             return cipherText;
         }
         try {
-            SecretKeySpec keySpec = new SecretKeySpec(aesKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.DECRYPT_MODE, keySpec);
-            byte[] bytes = cipher.doFinal(Base64.getDecoder().decode(cipherText));
-            return new String(bytes, StandardCharsets.UTF_8);
+            return decryptRaw(cipherText);
         } catch (Exception e) {
             // 历史明文数据直接返回
             return cipherText;
         }
+    }
+
+    /**
+     * 判断给定值是否为本工具产出的密文
+     * <p>用于写入前判重，避免明文被二次加密。</p>
+     */
+    public static boolean isEncrypted(String value) {
+        if (StrUtil.isBlank(value)) {
+            return false;
+        }
+        try {
+            return !value.equals(decryptRaw(value));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static String decryptRaw(String cipherText) throws Exception {
+        SecretKeySpec keySpec = new SecretKeySpec(aesKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
+        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec);
+        byte[] bytes = cipher.doFinal(Base64.getDecoder().decode(cipherText));
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }

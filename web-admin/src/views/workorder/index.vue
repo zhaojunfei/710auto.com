@@ -1,30 +1,100 @@
 <template>
   <div class="page-container">
-    <div class="card-block">
-      <div class="toolbar">
-        <el-button type="primary" @click="manualVisible = true"><el-icon><Plus /></el-icon>&nbsp;手动开单</el-button>
-        <el-button @click="load"><el-icon><Refresh /></el-icon>&nbsp;刷新看板</el-button>
-        <div style="flex:1"></div>
-        <span class="text-muted">拖拽卡片换列由后端状态机校验；超时/加急卡片红色标记</span>
-      </div>
-      <div class="kanban" v-loading="loading">
-        <div class="kanban-col" v-for="col in columns" :key="col">
-          <h4><span>{{ col }}</span><el-tag size="small">{{ (board[col] || []).length }}</el-tag></h4>
-          <div
-            v-for="o in board[col]"
-            :key="o.id"
-            class="kanban-card"
-            :class="{ urgent: o.isUrgent === 1 }"
-            @click="openDetail(o)"
-          >
-            <div><b>{{ o.orderNo }}</b> <el-tag size="small" :type="o.isUrgent ? 'danger' : 'info'">{{ o.plateNo }}</el-tag></div>
-            <div class="text-muted">{{ o.brandModel || '未填写车型' }} · {{ o.contactName || '' }}</div>
-            <div class="text-muted">预计/创建：{{ o.createTime }}</div>
+    <el-tabs v-model="tab">
+      <!-- ============ 工单看板 ============ -->
+      <el-tab-pane label="工单看板" name="kanban">
+        <div class="card-block">
+          <div class="toolbar">
+            <el-button type="primary" @click="manualVisible = true"><el-icon><Plus /></el-icon>&nbsp;手动开单</el-button>
+            <el-button @click="load"><el-icon><Refresh /></el-icon>&nbsp;刷新看板</el-button>
+            <div style="flex:1"></div>
+            <span class="text-muted">拖拽卡片换列由后端状态机校验；超时/加急卡片红色标记</span>
           </div>
-          <div v-if="!(board[col] || []).length" class="text-muted" style="text-align:center;padding:12px">暂无</div>
+          <div class="kanban" v-loading="loading">
+            <div class="kanban-col" v-for="col in columns" :key="col">
+              <h4><span>{{ col }}</span><el-tag size="small">{{ (board[col] || []).length }}</el-tag></h4>
+              <div
+                v-for="o in board[col]"
+                :key="o.id"
+                class="kanban-card"
+                :class="{ urgent: o.isUrgent === 1 }"
+                @click="openDetail(o)"
+              >
+                <div><b>{{ o.orderNo }}</b> <el-tag size="small" :type="o.isUrgent ? 'danger' : 'info'">{{ o.plateNo }}</el-tag></div>
+                <div class="text-muted">{{ o.brandModel || '未填写车型' }} · {{ o.contactName || '' }}</div>
+                <div class="text-muted">预计/创建：{{ o.createTime }}</div>
+              </div>
+              <div v-if="!(board[col] || []).length" class="text-muted" style="text-align:center;padding:12px">暂无</div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </el-tab-pane>
+
+      <!-- ============ 预约管理 ============ -->
+      <el-tab-pane label="预约管理" name="appointment">
+        <crud-table
+          ref="apptTableRef"
+          url="/admin/appointments"
+          title="预约单"
+          :columns="apptColumns"
+          :form-fields="apptForm"
+          :search-fields="apptSearch"
+          :default-form="{ status: '待确认', source: 'admin' }"
+        >
+          <template #actions>
+            <el-button @click="capacityVisible = true">查询剩余产能</el-button>
+          </template>
+          <template #row-actions="{ row }">
+            <el-button v-if="row.status === '待确认'" link type="primary" @click="confirmAppt(row)">确认</el-button>
+            <el-button v-if="row.status !== '已取消' && row.status !== '已完成'" link type="warning" @click="receiveAppt(row)">到店接车</el-button>
+            <el-button v-if="row.status !== '已取消' && row.status !== '已完成'" link type="danger" @click="cancelAppt(row)">取消</el-button>
+          </template>
+        </crud-table>
+      </el-tab-pane>
+
+      <!-- ============ 工单评价 ============ -->
+      <el-tab-pane label="工单评价" name="evaluate">
+        <crud-table
+          url="/admin/work-order-evaluate"
+          title="评价"
+          :can-add="false"
+          :columns="evalColumns"
+          :form-fields="evalForm"
+          :search-fields="[{ prop: 'workOrderId', label: '工单ID' }]"
+        />
+      </el-tab-pane>
+
+      <!-- ============ 派工记录 ============ -->
+      <el-tab-pane label="派工记录" name="dispatch">
+        <crud-table
+          url="/admin/dispatch-record"
+          title="派工记录"
+          :can-add="false"
+          :can-edit="false"
+          :can-delete="false"
+          :columns="dispatchColumns"
+          :search-fields="[{ prop: 'workOrderId', label: '工单ID' }]"
+        />
+      </el-tab-pane>
+
+      <!-- ============ 退款单 ============ -->
+      <el-tab-pane label="退款单" name="refund">
+        <crud-table
+          ref="refundTableRef"
+          url="/admin/refund-record"
+          title="退款单"
+          :can-add="false"
+          :columns="refundColumns"
+          :form-fields="refundForm"
+          :search-fields="[{ prop: 'refundNoLike', label: '退款单号' }, { prop: 'status', label: '状态', options: ['待审核', '已通过', '已拒绝', '已退款'].map((v) => ({ label: v, value: v })) }]"
+        >
+          <template #row-actions="{ row }">
+            <el-button v-if="row.status === '待审核'" link type="success" @click="auditRefund(row, true)">通过</el-button>
+            <el-button v-if="row.status === '待审核'" link type="danger" @click="auditRefund(row, false)">拒绝</el-button>
+          </template>
+        </crud-table>
+      </el-tab-pane>
+    </el-tabs>
 
     <!-- 手动开单 -->
     <el-dialog v-model="manualVisible" title="手动录入线下工单" width="640px">
@@ -139,14 +209,29 @@
         <el-button type="primary" @click="doSettle">确认结算</el-button>
       </template>
     </el-dialog>
+
+    <!-- 剩余产能 -->
+    <el-dialog v-model="capacityVisible" title="查询各门店剩余产能" width="420px">
+      <el-form label-width="110px">
+        <el-form-item label="门店ID"><el-input-number v-model="capacityForm.storeId" :min="1" style="width:100%" /></el-form-item>
+        <el-form-item label="日期"><el-input v-model="capacityForm.date" placeholder="yyyy-MM-dd，留空=今天" /></el-form-item>
+      </el-form>
+      <el-alert v-if="capacityResult !== null" type="success" :closable="false" :title="`剩余可预约产能：${capacityResult} 个`" />
+      <template #footer>
+        <el-button @click="capacityVisible = false">关闭</el-button>
+        <el-button type="primary" @click="queryCapacity">查询</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { crud, workOrderApi } from '@/api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { appointmentApi, crud, refundApi, workOrderApi } from '@/api'
+import CrudTable from '@/components/CrudTable.vue'
 
+const tab = ref('kanban')
 const columns = ['待接车', '待派工', '施工中', '待质检', '待结算', '已离店', '已评价']
 const board = ref<any>({})
 const loading = ref(false)
@@ -164,6 +249,13 @@ const dispatchTechId = ref<number>()
 const manualForm = reactive<any>({ isUrgent: 0 })
 const settleForm = reactive<any>({ payType: '微信', useBalance: 0, usePoints: 0 })
 
+const apptTableRef = ref<any>()
+const refundTableRef = ref<any>()
+const capacityVisible = ref(false)
+const capacityResult = ref<number | null>(null)
+const capacityForm = reactive<any>({ storeId: undefined, date: '' })
+
+/* ---------- 看板 ---------- */
 async function load() {
   loading.value = true
   try { board.value = await workOrderApi.kanban() } finally { loading.value = false }
@@ -214,8 +306,116 @@ async function afterAction(msg: string) {
   load()
 }
 
+/* ---------- 预约管理 ---------- */
+const apptColumns = [
+  { prop: 'appointmentNo', label: '预约单号', minWidth: 150 },
+  { prop: 'plateNo', label: '车牌', width: 120 },
+  { prop: 'itemName', label: '服务项目', minWidth: 130 },
+  { prop: 'contactName', label: '联系人', width: 100 },
+  { prop: 'contactPhone', label: '电话', width: 130 },
+  { prop: 'appointTime', label: '到店时间', width: 170 },
+  { prop: 'source', label: '来源', width: 90 },
+  { prop: 'status', label: '状态', width: 100, tag: true }
+]
+const apptForm = [
+  { prop: 'plateNo', label: '车牌号' },
+  { prop: 'brandModel', label: '品牌车型' },
+  { prop: 'itemName', label: '服务项目' },
+  { prop: 'contactName', label: '联系人' },
+  { prop: 'contactPhone', label: '联系电话' },
+  { prop: 'appointTime', label: '预约到店时间', span: 24 },
+  { prop: 'remark', label: '客户备注', type: 'textarea', span: 24 },
+  { prop: 'status', label: '状态', type: 'select', options: ['待确认', '已确认', '待接车', '已完成', '已取消'].map((v) => ({ label: v, value: v })) }
+]
+const apptSearch = [
+  { prop: 'appointmentNoLike', label: '预约单号' },
+  { prop: 'plateNoLike', label: '车牌' },
+  { prop: 'contactNameLike', label: '联系人' },
+  { prop: 'status', label: '状态', options: ['待确认', '已确认', '待接车', '已完成', '已取消'].map((v) => ({ label: v, value: v })) }
+]
+
+async function confirmAppt(row: any) {
+  await appointmentApi.confirm(row.id)
+  ElMessage.success('预约已确认')
+  apptTableRef.value?.load()
+}
+async function cancelAppt(row: any) {
+  const { value } = await ElMessageBox.prompt('请输入取消原因', '取消预约', { inputValue: '客户取消', inputType: 'textarea' })
+  await appointmentApi.cancel(row.id, value || undefined)
+  ElMessage.success('预约已取消')
+  apptTableRef.value?.load()
+}
+async function receiveAppt(row: any) {
+  await ElMessageBox.confirm('确认已到店接车并生成工单？', '到店接车', { type: 'warning' })
+  await appointmentApi.receive(row.id, {
+    plateNo: row.plateNo,
+    brandModel: row.brandModel,
+    contactName: row.contactName,
+    contactPhone: row.contactPhone
+  })
+  ElMessage.success('已接车并生成工单')
+  apptTableRef.value?.load()
+  load()
+}
+async function queryCapacity() {
+  capacityResult.value = await appointmentApi.remainCapacity({ storeId: capacityForm.storeId, date: capacityForm.date || undefined })
+}
+
+/* ---------- 工单评价 ---------- */
+const evalColumns = [
+  { prop: 'workOrderId', label: '工单ID', width: 100 },
+  { prop: 'score', label: '综合', width: 70 },
+  { prop: 'serviceScore', label: '服务', width: 70 },
+  { prop: 'techScore', label: '技师', width: 70 },
+  { prop: 'content', label: '评价内容', minWidth: 220 },
+  { prop: 'reply', label: '门店回复', minWidth: 180 },
+  { prop: 'status', label: '显示', width: 80, tag: true }
+]
+const evalForm = [{ prop: 'reply', label: '门店回复', type: 'textarea', span: 24 }, { prop: 'status', label: '显示', type: 'switch' }]
+
+/* ---------- 派工记录 ---------- */
+const dispatchColumns = [
+  { prop: 'workOrderId', label: '工单ID', width: 100 },
+  { prop: 'technicianName', label: '技师', width: 120 },
+  { prop: 'dispatchType', label: '类型', width: 100 },
+  { prop: 'dispatchTime', label: '操作时间', width: 170 },
+  { prop: 'status', label: '状态', width: 100 },
+  { prop: 'remark', label: '备注', minWidth: 160 }
+]
+
+/* ---------- 退款单 ---------- */
+const refundColumns = [
+  { prop: 'refundNo', label: '退款单号', minWidth: 150 },
+  { prop: 'orderNo', label: '原订单号', width: 150 },
+  { prop: 'refundAmount', label: '退款金额', width: 110, money: true },
+  { prop: 'reason', label: '原因', minWidth: 160 },
+  { prop: 'status', label: '状态', width: 100 },
+  { prop: 'auditTime', label: '审核时间', width: 170 },
+  { prop: 'auditRemark', label: '审核备注', minWidth: 140 }
+]
+const refundForm = [
+  { prop: 'status', label: '状态', type: 'select', options: ['待审核', '已通过', '已拒绝', '已退款'].map((v) => ({ label: v, value: v })) },
+  { prop: 'auditRemark', label: '审核备注', type: 'textarea', span: 24 }
+]
+
+async function auditRefund(row: any, pass: boolean) {
+  const { value } = await ElMessageBox.prompt(pass ? '通过备注（可选）' : '拒绝原因', '退款审核', { inputType: 'textarea' })
+  await refundApi.audit(row.id, pass, value || undefined)
+  ElMessage.success(pass ? '已通过' : '已拒绝')
+  refundTableRef.value?.load()
+}
+
 onMounted(async () => {
   load()
   technicians.value = await crud.list('/admin/technician')
 })
 </script>
+
+<style scoped>
+.kanban { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.kanban-col { flex: 0 0 220px; background: #f5f7fa; border-radius: 6px; padding: 8px; }
+.kanban-col h4 { display: flex; justify-content: space-between; align-items: center; margin: 4px 4px 8px; }
+.kanban-card { background: #fff; border-radius: 6px; padding: 10px; margin-bottom: 8px; cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.kanban-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, .16); }
+.kanban-card.urgent { border-left: 3px solid #f56c6c; }
+</style>

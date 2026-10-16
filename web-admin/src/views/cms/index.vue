@@ -4,6 +4,9 @@
       <el-tab-pane label="养护知识文章" name="article">
         <crud-table url="/admin/cms-article" title="文章" :columns="articleColumns" :form-fields="articleForm" :search-fields="[{ prop: 'titleLike', label: '标题' }]" :default-form="{ status: 1, isTop: 0 }" />
       </el-tab-pane>
+      <el-tab-pane label="文章分类" name="category">
+        <crud-table url="/admin/cms-article-category" title="文章分类" :columns="catColumns" :form-fields="catForm" :default-form="{ status: 1, parentId: 0 }" />
+      </el-tab-pane>
       <el-tab-pane label="施工案例" name="case">
         <crud-table url="/admin/cms-case" title="案例" :columns="caseColumns" :form-fields="caseForm" :default-form="{ status: 1 }" />
       </el-tab-pane>
@@ -44,6 +47,21 @@ const articleForm = [
   { prop: 'seoTitle', label: 'SEO标题' }, { prop: 'seoKeywords', label: 'SEO关键词' },
   { prop: 'seoDescription', label: 'SEO描述', span: 24 },
   { prop: 'status', label: '发布', type: 'switch' }
+]
+
+const catColumns = [
+  { prop: 'categoryName', label: '分类名称' },
+  { prop: 'categoryNameEn', label: '英文名称' },
+  { prop: 'parentId', label: '父级ID', width: 90 },
+  { prop: 'sort', label: '排序', width: 80 },
+  { prop: 'status', label: '状态', width: 80 }
+]
+const catForm = [
+  { prop: 'categoryName', label: '分类名称' },
+  { prop: 'categoryNameEn', label: '英文名称' },
+  { prop: 'parentId', label: '父级ID', type: 'number' },
+  { prop: 'sort', label: '排序', type: 'number' },
+  { prop: 'status', label: '启用', type: 'switch' }
 ]
 
 const caseColumns = [{ prop: 'caseName', label: '案例' }, { prop: 'caseType', label: '类型', width: 90 }, { prop: 'viewCount', label: '浏览', width: 80 }, { prop: 'status', label: '状态', width: 80 }]

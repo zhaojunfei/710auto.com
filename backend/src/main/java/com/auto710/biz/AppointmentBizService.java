@@ -53,8 +53,7 @@ public class AppointmentBizService {
 
         appointment.setAppointmentNo(IdGenUtil.appointmentNo());
         appointment.setStatus(AppointmentStatus.WAIT_CONFIRM);
-        appointment.setPlateNo(EncryptUtil.encrypt(appointment.getPlateNo()));
-        appointment.setContactPhone(EncryptUtil.encrypt(appointment.getContactPhone()));
+        // 车牌 / 手机号加密由 AppointmentServiceImpl 写入钩子统一处理（含后台维护路径）
         appointmentService.save(appointment);
 
         Map<String, String> data = new LinkedHashMap<>();
@@ -77,9 +76,12 @@ public class AppointmentBizService {
         }
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         appointment.setConfirmTime(LocalDateTime.now());
-        messageService.sendTemplate(appointment.getMemberId(), MessageService.MSG_TYPE_APPOINT_CONFIRM, Map.of(
-                "appointmentNo", appointment.getAppointmentNo(),
-                "status", AppointmentStatus.CONFIRMED));
+        // 不能用 Map.of：预约单号等字段可能为空，Map.of 遇 null 会抛 NPE
+        Map<String, String> data = new LinkedHashMap<>();
+        data.put("appointmentNo", appointment.getAppointmentNo());
+        data.put("itemName", appointment.getItemName());
+        data.put("status", AppointmentStatus.CONFIRMED);
+        messageService.sendTemplate(appointment.getMemberId(), MessageService.MSG_TYPE_APPOINT_CONFIRM, data);
         return appointmentService.updateById(appointment);
     }
 

@@ -22,6 +22,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final JwtInterceptor jwtInterceptor;
 
+    /**
+     * 框架级公开接口：随代码发布，不依赖各环境 yml 白名单配置。
+     * （yml 中的 white-list 用于环境相关的额外放行项）
+     */
+    private static final List<String> BUILT_IN_WHITE_LIST = List.of(
+            "/api/supplier/login"
+    );
+
     @Value("${auto710.security.white-list}")
     private List<String> whiteList;
 
@@ -30,9 +38,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        List<String> merged = new java.util.ArrayList<>(whiteList == null ? List.of() : whiteList);
+        BUILT_IN_WHITE_LIST.forEach(p -> {
+            if (!merged.contains(p)) {
+                merged.add(p);
+            }
+        });
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns(whiteList);
+                .excludePathPatterns(merged);
     }
 
     @Override

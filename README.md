@@ -16,7 +16,7 @@
 | 后台前端 | Vue 3 · Vite 5 · TypeScript · Element Plus · WangEditor 5 |
 | 官网前端 | Vue 3 · Vite 5 · 中英双语 · SEO / hreflang |
 | 小程序 | 微信原生小程序（中英双语） |
-| H5 | Vue 3 · Vite 5（客户预约 + 接车技师移动端） |
+| H5 | Vue 3 · Vite 5（客户预约 + 接车技师移动端 + 供应商移动端） |
 | 部署 | Docker Compose · Nginx · 定时备份 |
 
 > 说明：按需求**不生成独立 App**，移动端由微信小程序 + H5 承载。
@@ -42,7 +42,7 @@
 ├── web-admin/          # PC 统一后台（Vue3 + Element Plus）
 ├── web-www/            # PC 品牌官网（中英双语 SEO）
 ├── miniprogram/        # 微信原生小程序
-├── h5/                 # H5 移动端（客户 + 技师端）
+├── h5/                 # H5 移动端（客户 + 技师端 + 供应商端）
 ├── sql/                # schema.sql（建表） + data.sql（种子数据）
 ├── tools/              # 代码生成器（tables.js + generate.js）
 ├── deploy/             # 部署脚本（环境变量示例、数据库备份）
@@ -125,8 +125,10 @@ docker compose up -d --build
 | manager | admin123 | 门店店长 |
 | tech01 | admin123 | 接车技师 |
 | finance | admin123 | 财务 |
+| supplier01 | admin123 | 供应商（**H5 供应商端** `/supplier/login` 登录，非 PC 后台） |
 
 > 首次登录后请立即在「系统管理 → 用户角色」中修改密码。
+> 供应商账号绑定关系：`part_supplier.user_id` → `sys_user.id`。
 
 ---
 
@@ -140,6 +142,8 @@ docker compose up -d --build
 - **工单看板**：按状态分列卡片式，超时高亮/红闪，拖拽调优先级，全流程状态机（接车→派工→施工→质检→结算→离店→评价）。
 - **存胎寄存**：在线下单、寄存库存、入库/取胎凭证（留证图）、到期提醒、逾期费用计算。
 - **配件库存**：进销存、出库关联工单、库存预警、毛利统计。
+- **供应商协同**：供应商端（H5）维护自有配件报价、提交送货单；门店后台确认入库自动加库存并写流水；按月对账单。
+- **后台维护全覆盖**：预约管理（确认/取消/到店接车/剩余产能）、会员车辆/已领券/积分流水/储值流水/已购套餐、退款单审核、存胎货位库存/明细/凭证、工单评价、派工记录、文章分类、数据字典、文件管理、经营日报；账本/日志类只读。
 - **会员营销**：会员/多车绑定、积分、储值、优惠券、养护套餐、充值赠礼。
 - **公众号**：关注欢迎语、关键词回复、自定义菜单同步、模板消息（全流程推送）、UnionID 打通。
 - **安全**：防重提交、限流、敏感词检测、手机号/车牌脱敏、密钥加密存储、RBAC 数据隔离、操作审计日志。
@@ -170,6 +174,7 @@ node tools/generate.js
 - [对象存储对接](docs/storage.md)
 - [微信公众号对接](docs/wechat.md)
 - [小程序与 H5](docs/miniprogram-h5.md)
+- [供应商协同（H5 供应商端）](docs/supplier-portal.md)
 - [业务差异文档（对标中医馆 PRD）](docs/business-difference.md)
 - [上线检查清单](docs/checklist-deploy.md)
 

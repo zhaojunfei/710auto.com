@@ -14,20 +14,23 @@ INSERT INTO `sys_role` (id, role_name, role_code, data_scope, sort, status, rema
 (4, '接车技师',   'TECHNICIAN', 3, 4, 1, '仅本人被派工单', NOW(), NOW(), 0),
 (5, '财务',       'FINANCE', 2, 5, 1, '结算、退款、报表', NOW(), NOW(), 0),
 (6, '运营',       'OPERATOR', 1, 6, 1, '内容 CMS、营销、会员', NOW(), NOW(), 0),
-(7, '只读账号',   'READONLY', 1, 7, 1, '仅查看', NOW(), NOW(), 0);
+(7, '只读账号',   'READONLY', 1, 7, 1, '仅查看', NOW(), NOW(), 0),
+(8, '供应商',     'SUPPLIER', 3, 8, 1, '供应商端：维护报价、提交送货单、对账', NOW(), NOW(), 0);
 
 -- ---------------- 系统用户 ----------------
 INSERT INTO `sys_user` (id, username, password, real_name, phone, store_id, status, remark, create_time, update_time, deleted) VALUES
 (1, 'admin',  '$2a$10$7a0uFHlnjp5J1e6VoXdYOet.0FJ1owx7MeS3QgMfsWtZWdk0CQjtC', '超级管理员', NULL, 1, 1, '系统内置超级管理员', NOW(), NOW(), 0),
 (2, 'manager','$2a$10$7a0uFHlnjp5J1e6VoXdYOet.0FJ1owx7MeS3QgMfsWtZWdk0CQjtC', '王店长', NULL, 1, 1, '门店店长', NOW(), NOW(), 0),
 (3, 'tech01', '$2a$10$7a0uFHlnjp5J1e6VoXdYOet.0FJ1owx7MeS3QgMfsWtZWdk0CQjtC', '李师傅', NULL, 1, 1, '机修技师', NOW(), NOW(), 0),
-(4, 'finance','$2a$10$7a0uFHlnjp5J1e6VoXdYOet.0FJ1owx7MeS3QgMfsWtZWdk0CQjtC', '张会计', NULL, 1, 1, '财务', NOW(), NOW(), 0);
+(4, 'finance','$2a$10$7a0uFHlnjp5J1e6VoXdYOet.0FJ1owx7MeS3QgMfsWtZWdk0CQjtC', '张会计', NULL, 1, 1, '财务', NOW(), NOW(), 0),
+(5, 'supplier01','$2a$10$7a0uFHlnjp5J1e6VoXdYOet.0FJ1owx7MeS3QgMfsWtZWdk0CQjtC', '哈尔滨汽配城-王经理', NULL, 1, 1, '供应商端账号', NOW(), NOW(), 0);
 
 INSERT INTO `sys_user_role` (user_id, role_id, create_time, update_time, deleted) VALUES
 (1, 1, NOW(), NOW(), 0),
 (2, 2, NOW(), NOW(), 0),
 (3, 4, NOW(), NOW(), 0),
-(4, 5, NOW(), NOW(), 0);
+(4, 5, NOW(), NOW(), 0),
+(5, 8, NOW(), NOW(), 0);
 
 -- ---------------- 系统菜单权限 ----------------
 INSERT INTO `sys_menu` (id, parent_id, menu_name, menu_type, path, component, perms, icon, sort, visible, status, create_time, update_time, deleted) VALUES
@@ -46,7 +49,28 @@ INSERT INTO `sys_menu` (id, parent_id, menu_name, menu_type, path, component, pe
 (13, 10, '多语言配置', 'MENU', '/system/language', 'system/language', 'system:language:list', 'Switch', 3, 1, 1, NOW(), NOW(), 0),
 (14, 10, '菜单可视化', 'MENU', '/system/menu', 'system/menu', 'system:menu:list', 'Grid', 4, 1, 1, NOW(), NOW(), 0),
 (15, 10, '对象存储', 'MENU', '/system/storage', 'system/storage', 'system:storage:list', 'Upload', 5, 1, 1, NOW(), NOW(), 0),
-(16, 10, '审计日志', 'MENU', '/system/audit', 'system/audit', 'system:audit:list', 'Bell', 6, 1, 1, NOW(), NOW(), 0);
+(16, 10, '审计日志', 'MENU', '/system/audit', 'system/audit', 'system:audit:list', 'Bell', 6, 1, 1, NOW(), NOW(), 0),
+(17, 10, '数据字典', 'MENU', '/system/dict', 'system/dict', 'system:dict:list', 'Collection', 7, 1, 1, NOW(), NOW(), 0),
+(18, 10, '文件管理', 'MENU', '/system/file', 'system/file', 'system:file:list', 'Folder', 8, 1, 1, NOW(), NOW(), 0);
+
+-- ---------------- 角色-菜单授权 ----------------
+-- 超级管理员(role 1)不需要授权，代码内置返回全量菜单；审计日志(16)默认只给超管。
+INSERT INTO `sys_role_menu` (role_id, menu_id, create_time, update_time, deleted) VALUES
+-- 门店店长：业务菜单 + 用户/参数/存储/字典/文件
+(2,1,NOW(),NOW(),0),(2,2,NOW(),NOW(),0),(2,3,NOW(),NOW(),0),(2,4,NOW(),NOW(),0),(2,5,NOW(),NOW(),0),
+(2,6,NOW(),NOW(),0),(2,7,NOW(),NOW(),0),(2,8,NOW(),NOW(),0),(2,9,NOW(),NOW(),0),(2,10,NOW(),NOW(),0),
+(2,11,NOW(),NOW(),0),(2,12,NOW(),NOW(),0),(2,15,NOW(),NOW(),0),(2,17,NOW(),NOW(),0),(2,18,NOW(),NOW(),0),
+-- 前台/接车员：看板、服务、预约工单、存胎、会员
+(3,1,NOW(),NOW(),0),(3,3,NOW(),NOW(),0),(3,4,NOW(),NOW(),0),(3,5,NOW(),NOW(),0),(3,7,NOW(),NOW(),0),
+-- 接车技师：看板、预约工单
+(4,1,NOW(),NOW(),0),(4,4,NOW(),NOW(),0),
+-- 财务：看板、工单/退款、会员流水、配件库存
+(5,1,NOW(),NOW(),0),(5,4,NOW(),NOW(),0),(5,6,NOW(),NOW(),0),(5,7,NOW(),NOW(),0),
+-- 运营：看板、服务、会员营销、官网CMS、公众号
+(6,1,NOW(),NOW(),0),(6,3,NOW(),NOW(),0),(6,7,NOW(),NOW(),0),(6,8,NOW(),NOW(),0),(6,9,NOW(),NOW(),0),
+-- 只读：全部业务菜单（仅查看，按钮级权限未做，见文档）
+(7,1,NOW(),NOW(),0),(7,2,NOW(),NOW(),0),(7,3,NOW(),NOW(),0),(7,4,NOW(),NOW(),0),(7,5,NOW(),NOW(),0),
+(7,6,NOW(),NOW(),0),(7,7,NOW(),NOW(),0),(7,8,NOW(),NOW(),0),(7,9,NOW(),NOW(),0);
 
 -- ---------------- 多语言 ----------------
 INSERT INTO `sys_language` (id, lang_code, lang_name, lang_name_en, flag_icon, is_default, status, sort, create_time, update_time, deleted) VALUES
@@ -171,6 +195,22 @@ INSERT INTO `part_info` (part_code, part_name, category_id, brand, spec, unit, p
 ('P-TIR-001', '朝阳轮胎 205/55R16', 3, '朝阳', '205/55R16', '条', 260.00, 420.00, 20, 8, '轮胎直供', 1, NOW(), NOW(), 0),
 ('P-BAT-001', '免维护电瓶 60Ah', 4, '骆驼', '60Ah', '个', 320.00, 520.00, 12, 5, '蓄电池直供', 1, NOW(), NOW(), 0),
 ('P-BRK-001', '前刹车片一套', 5, '博世', '通用', '套', 120.00, 260.00, 25, 10, '哈尔滨汽配城', 1, NOW(), NOW(), 0);
+
+-- ---------------- 供应商 & 送货单（供应商端示例数据） ----------------
+-- 供应商档案：user_id 绑定 sys_user 账号，供应商登录后据此识别身份
+INSERT INTO `part_supplier` (id, user_id, supplier_name, contact_name, phone, address, remark, status, create_time, update_time, deleted) VALUES
+(1, 5, '哈尔滨汽配城', '王经理', '13800000001', '哈尔滨市道里区汽配城 A 区 12 号', '机油/滤清器/刹车片主供', 1, NOW(), NOW(), 0),
+(2, NULL, '轮胎直供', '刘经理', '13800000002', '哈尔滨市香坊区轮胎大世界', '轮胎供货商', 1, NOW(), NOW(), 0),
+(3, NULL, '蓄电池直供', '赵经理', '13800000003', '哈尔滨市南岗区蓄电池批发市场', '电瓶供货商', 1, NOW(), NOW(), 0);
+
+INSERT INTO `supplier_delivery` (id, delivery_no, supplier_id, supplier_name, store_id, item_count, total_amount, expect_date, status, submit_time, confirm_user_id, confirm_time, confirm_remark, remark, create_time, update_time, deleted) VALUES
+(1, 'SH20260101000001', 1, '哈尔滨汽配城', 1, 2, 410.00, DATE_FORMAT(NOW(), '%Y-%m-%d'), '已入库', NOW(), 1, NOW(), '数量核对无误', '常规补货', NOW(), NOW(), 0),
+(2, 'SH20260101000002', 1, '哈尔滨汽配城', 1, 1, 180.00, DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 2 DAY), '%Y-%m-%d'), '待确认', NOW(), NULL, NULL, NULL, '机油补货', NOW(), NOW(), 0);
+
+INSERT INTO `supplier_delivery_item` (delivery_id, part_id, part_name, spec, unit, quantity, unit_price, amount, remark, create_time, update_time, deleted) VALUES
+(1, 1, '全合成机油 5W-30 4L', '5W-30/4L', '桶', 1, 180.00, 180.00, NULL, NOW(), NOW(), 0),
+(1, 2, '机油滤清器', '通用', '个', 5, 46.00, 230.00, '促销价', NOW(), NOW(), 0),
+(2, 1, '全合成机油 5W-30 4L', '5W-30/4L', '桶', 1, 180.00, 180.00, NULL, NOW(), NOW(), 0);
 
 -- ---------------- 公众号回复规则 & 模板消息 ----------------
 INSERT INTO `wechat_reply_rule` (rule_type, keyword, match_type, reply_type, content, status, sort, create_time, update_time, deleted) VALUES

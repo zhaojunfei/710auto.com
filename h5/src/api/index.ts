@@ -40,3 +40,17 @@ export const techApi = {
   abnormal: (id: number, reason: string) => request.post(`/tech/orders/${id}/abnormal`, null, { params: { reason } }),
   stats: () => request.get('/tech/stats')
 }
+
+/** 供应商端 */
+export const supplierApi = {
+  login: (data: any) => request.post('/supplier/login', data),
+  profile: () => request.get('/supplier/profile'),
+  stats: () => request.get('/supplier/stats'),
+  parts: (keyword?: string) => request.get('/supplier/parts', { params: { keyword } }),
+  savePart: (data: any) => request.post('/supplier/parts', data),
+  deliveries: (status?: string) => request.get('/supplier/deliveries', { params: { status } }),
+  delivery: (id: number) => request.get(`/supplier/deliveries/${id}`),
+  submit: (data: any) => request.post('/supplier/deliveries', data),
+  cancel: (id: number) => request.post(`/supplier/deliveries/${id}/cancel`),
+  statements: (month?: string) => request.get('/supplier/statements', { params: { month } })
+}

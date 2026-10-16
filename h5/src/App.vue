@@ -6,6 +6,7 @@
       <router-link to="/booking" :class="{ active: $route.path === '/booking' }">预约</router-link>
       <router-link to="/orders" :class="{ active: $route.path === '/orders' }">我的工单</router-link>
       <router-link to="/tech/login" :class="{ active: $route.path.startsWith('/tech') }">技师端</router-link>
+      <router-link to="/supplier/login" :class="{ active: $route.path.startsWith('/supplier') }">供应商端</router-link>
     </nav>
   </div>
 </template>
@@ -15,5 +16,5 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const showTab = computed(() => !route.path.startsWith('/tech/orders/'))
+const showTab = computed(() => !route.path.startsWith('/tech/orders/') && !route.path.startsWith('/supplier/'))
 </script>

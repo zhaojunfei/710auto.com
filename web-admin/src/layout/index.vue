@@ -104,6 +104,8 @@ const defaultMenus = [
       { id: 13, name: '多语言配置', path: '/system/language' },
       { id: 14, name: '菜单可视化', path: '/system/menu' },
       { id: 15, name: '对象存储', path: '/system/storage' },
+      { id: 17, name: '数据字典', path: '/system/dict' },
+      { id: 18, name: '文件管理', path: '/system/file' },
       { id: 16, name: '审计日志', path: '/system/audit' }
     ]
   }

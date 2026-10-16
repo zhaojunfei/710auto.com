@@ -36,4 +36,9 @@ public final class IdGenUtil {
     public static String refundNo() {
         return gen("TK");
     }
+
+    /** 供应商送货单号 */
+    public static String deliveryNo() {
+        return gen("SH");
+    }
 }

@@ -19,6 +19,9 @@ public class PartSupplier implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    /** 关联系统用户ID(供应商端登录账号) */
+    private Long userId;
+
     /** 供应商名称 */
     private String supplierName;
 

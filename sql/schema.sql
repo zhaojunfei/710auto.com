@@ -989,6 +989,7 @@ CREATE TABLE `part_stock_record` (
 DROP TABLE IF EXISTS `part_supplier`;
 CREATE TABLE `part_supplier` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `user_id` BIGINT DEFAULT NULL COMMENT '关联系统用户ID(供应商端登录账号)',
   `supplier_name` VARCHAR(128) DEFAULT NULL COMMENT '供应商名称',
   `contact_name` VARCHAR(64) DEFAULT NULL COMMENT '联系人',
   `phone` VARCHAR(64) DEFAULT NULL COMMENT '联系电话',
@@ -1000,6 +1001,53 @@ CREATE TABLE `part_supplier` (
   `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除 0否1是',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='配件供应商';
+
+-- 供应商送货单
+DROP TABLE IF EXISTS `supplier_delivery`;
+CREATE TABLE `supplier_delivery` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `delivery_no` VARCHAR(32) DEFAULT NULL COMMENT '送货单号',
+  `supplier_id` BIGINT DEFAULT NULL COMMENT '供应商ID',
+  `supplier_name` VARCHAR(128) DEFAULT NULL COMMENT '供应商名称',
+  `store_id` BIGINT DEFAULT NULL COMMENT '收货门店ID',
+  `item_count` INT DEFAULT NULL COMMENT '明细条数',
+  `total_amount` DECIMAL(12,2) DEFAULT NULL COMMENT '合计金额',
+  `expect_date` VARCHAR(16) DEFAULT NULL COMMENT '预计到货日期',
+  `status` VARCHAR(16) DEFAULT NULL COMMENT '状态 待确认/已入库/已拒绝',
+  `submit_time` DATETIME DEFAULT NULL COMMENT '提交时间',
+  `confirm_user_id` BIGINT DEFAULT NULL COMMENT '确认人ID',
+  `confirm_time` DATETIME DEFAULT NULL COMMENT '确认时间',
+  `confirm_remark` VARCHAR(255) DEFAULT NULL COMMENT '确认备注',
+  `remark` VARCHAR(255) DEFAULT NULL COMMENT '备注',
+  `create_time` DATETIME DEFAULT NULL COMMENT '创建时间',
+  `update_time` DATETIME DEFAULT NULL COMMENT '更新时间',
+  `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除 0否1是',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_supplier_delivery_delivery_no` (`delivery_no`),
+  KEY `idx_supplier_delivery_supplier_id` (`supplier_id`),
+  KEY `idx_supplier_delivery_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='供应商送货单';
+
+-- 供应商送货明细
+DROP TABLE IF EXISTS `supplier_delivery_item`;
+CREATE TABLE `supplier_delivery_item` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `delivery_id` BIGINT DEFAULT NULL COMMENT '送货单ID',
+  `part_id` BIGINT DEFAULT NULL COMMENT '配件ID',
+  `part_name` VARCHAR(128) DEFAULT NULL COMMENT '配件名称',
+  `spec` VARCHAR(128) DEFAULT NULL COMMENT '规格型号',
+  `unit` VARCHAR(16) DEFAULT NULL COMMENT '单位',
+  `quantity` INT DEFAULT NULL COMMENT '数量',
+  `unit_price` DECIMAL(10,2) DEFAULT NULL COMMENT '单价',
+  `amount` DECIMAL(12,2) DEFAULT NULL COMMENT '金额',
+  `remark` VARCHAR(255) DEFAULT NULL COMMENT '备注',
+  `create_time` DATETIME DEFAULT NULL COMMENT '创建时间',
+  `update_time` DATETIME DEFAULT NULL COMMENT '更新时间',
+  `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除 0否1是',
+  PRIMARY KEY (`id`),
+  KEY `idx_supplier_delivery_item_delivery_id` (`delivery_id`),
+  KEY `idx_supplier_delivery_item_part_id` (`part_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='供应商送货明细';
 
 -- 文章分类
 DROP TABLE IF EXISTS `cms_article_category`;

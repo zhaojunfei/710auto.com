@@ -21,6 +21,8 @@ const routes = [
       { path: 'system/language', name: 'SysLanguage', component: () => import('@/views/system/language.vue'), meta: { title: '多语言配置' } },
       { path: 'system/menu', name: 'SysMenu', component: () => import('@/views/system/menu.vue'), meta: { title: '菜单可视化' } },
       { path: 'system/storage', name: 'SysStorage', component: () => import('@/views/system/storage.vue'), meta: { title: '对象存储' } },
+      { path: 'system/dict', name: 'SysDict', component: () => import('@/views/system/dict.vue'), meta: { title: '数据字典' } },
+      { path: 'system/file', name: 'SysFile', component: () => import('@/views/system/file.vue'), meta: { title: '文件管理' } },
       { path: 'system/audit', name: 'SysAudit', component: () => import('@/views/system/audit.vue'), meta: { title: '审计日志' } }
     ]
   }

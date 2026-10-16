@@ -55,11 +55,12 @@
       </el-header>
 
       <el-main style="background: #f5f7fa">
-        <router-view v-slot="{ Component }">
+        <router-view v-slot="{ Component }" v-if="ready">
           <keep-alive>
             <component :is="Component" />
           </keep-alive>
         </router-view>
+        <div v-else v-loading="true" style="height: 60vh"></div>
       </el-main>
     </el-container>
   </el-container>
@@ -73,6 +74,7 @@ import { useUserStore } from '@/store/user'
 import { authApi } from '@/api'
 
 const collapsed = ref(false)
+const ready = ref(false)
 const router = useRouter()
 const userStore = useUserStore()
 
@@ -100,6 +102,7 @@ const defaultMenus = [
   {
     id: 10, name: '系统管理', icon: 'Setting', children: [
       { id: 11, name: '用户角色', path: '/system/user' },
+      { id: 19, name: '菜单管理', path: '/system/menu-manage' },
       { id: 12, name: '系统参数', path: '/system/config' },
       { id: 13, name: '多语言配置', path: '/system/language' },
       { id: 14, name: '菜单可视化', path: '/system/menu' },
@@ -115,6 +118,7 @@ onMounted(async () => {
   if (!userStore.userInfo?.username) {
     try { await userStore.loadInfo() } catch { /* ignore */ }
   }
+  ready.value = true
 })
 
 async function onCommand(command: string) {

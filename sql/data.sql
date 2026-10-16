@@ -51,7 +51,48 @@ INSERT INTO `sys_menu` (id, parent_id, menu_name, menu_type, path, component, pe
 (15, 10, '对象存储', 'MENU', '/system/storage', 'system/storage', 'system:storage:list', 'Upload', 5, 1, 1, NOW(), NOW(), 0),
 (16, 10, '审计日志', 'MENU', '/system/audit', 'system/audit', 'system:audit:list', 'Bell', 6, 1, 1, NOW(), NOW(), 0),
 (17, 10, '数据字典', 'MENU', '/system/dict', 'system/dict', 'system:dict:list', 'Collection', 7, 1, 1, NOW(), NOW(), 0),
-(18, 10, '文件管理', 'MENU', '/system/file', 'system/file', 'system:file:list', 'Folder', 8, 1, 1, NOW(), NOW(), 0);
+(18, 10, '文件管理', 'MENU', '/system/file', 'system/file', 'system:file:list', 'Folder', 8, 1, 1, NOW(), NOW(), 0),
+(19, 10, '菜单管理', 'MENU', '/system/menu-manage', 'system/menu-manage', 'system:menu:manage', 'Menu', 9, 1, 1, NOW(), NOW(), 0);
+
+-- 按钮级权限点（新增/编辑/删除）：挂在对应业务菜单下，perms 形如 store-info:add。
+-- 前端 CrudTable 默认按资源名（url 去掉 /admin/）做按钮级权限控制。
+INSERT INTO `sys_menu` (parent_id, menu_name, menu_type, perms, sort, visible, status, create_time, update_time, deleted)
+SELECT r.pid,
+       CASE a.act WHEN 'add' THEN '新增' WHEN 'edit' THEN '编辑' ELSE '删除' END,
+       'BUTTON',
+       CONCAT(r.res, ':', a.act),
+       a.srt, 0, 1, NOW(), NOW(), 0
+FROM (
+    -- 门店工位
+    SELECT 2 AS pid, 'store-info' AS res UNION ALL SELECT 2, 'work-station' UNION ALL SELECT 2, 'technician' UNION ALL SELECT 2, 'technician-schedule' UNION ALL
+    -- 服务项目
+    SELECT 3, 'service-item' UNION ALL SELECT 3, 'service-category' UNION ALL SELECT 3, 'service-price' UNION ALL
+    -- 预约工单
+    SELECT 4, 'appointments' UNION ALL SELECT 4, 'work-order-evaluate' UNION ALL SELECT 4, 'dispatch-record' UNION ALL SELECT 4, 'refund-record' UNION ALL
+    -- 存胎寄存
+    SELECT 5, 'tire-storage' UNION ALL SELECT 5, 'tire-storage-stock' UNION ALL SELECT 5, 'tire-storage-item' UNION ALL SELECT 5, 'tire-storage-proof' UNION ALL
+    -- 配件库存
+    SELECT 6, 'part-info' UNION ALL SELECT 6, 'part-stock-record' UNION ALL SELECT 6, 'part-category' UNION ALL SELECT 6, 'part-supplier' UNION ALL SELECT 6, 'supplier-delivery' UNION ALL
+    -- 会员营销
+    SELECT 7, 'member' UNION ALL SELECT 7, 'member-vehicle' UNION ALL SELECT 7, 'member-level' UNION ALL SELECT 7, 'coupon' UNION ALL
+    SELECT 7, 'member-coupon' UNION ALL SELECT 7, 'recharge-rule' UNION ALL SELECT 7, 'maintenance-package' UNION ALL SELECT 7, 'member-package' UNION ALL
+    SELECT 7, 'marketing-activity' UNION ALL SELECT 7, 'member-points-log' UNION ALL SELECT 7, 'member-balance-log' UNION ALL
+    -- 官网CMS
+    SELECT 8, 'cms-article' UNION ALL SELECT 8, 'cms-article-category' UNION ALL SELECT 8, 'cms-case' UNION ALL
+    SELECT 8, 'cms-brand-story' UNION ALL SELECT 8, 'cms-banner' UNION ALL SELECT 8, 'cms-message' UNION ALL
+    -- 公众号
+    SELECT 9, 'wechat-reply-rule' UNION ALL SELECT 9, 'wechat-template-msg' UNION ALL SELECT 9, 'wechat-fans' UNION ALL SELECT 9, 'wechat-material' UNION ALL
+    -- 系统管理
+    SELECT 11, 'sys-user' UNION ALL SELECT 11, 'sys-role' UNION ALL
+    SELECT 16, 'sys-audit-log' UNION ALL
+    SELECT 17, 'sys-dict-type' UNION ALL SELECT 17, 'sys-dict-data' UNION ALL
+    SELECT 18, 'sys-file'
+) r
+CROSS JOIN (
+    SELECT 'add' AS act, 1 AS srt UNION ALL
+    SELECT 'edit', 2 UNION ALL
+    SELECT 'delete', 3
+) a;
 
 -- ---------------- 角色-菜单授权 ----------------
 -- 超级管理员(role 1)不需要授权，代码内置返回全量菜单；审计日志(16)默认只给超管。
@@ -68,9 +109,17 @@ INSERT INTO `sys_role_menu` (role_id, menu_id, create_time, update_time, deleted
 (5,1,NOW(),NOW(),0),(5,4,NOW(),NOW(),0),(5,6,NOW(),NOW(),0),(5,7,NOW(),NOW(),0),
 -- 运营：看板、服务、会员营销、官网CMS、公众号
 (6,1,NOW(),NOW(),0),(6,3,NOW(),NOW(),0),(6,7,NOW(),NOW(),0),(6,8,NOW(),NOW(),0),(6,9,NOW(),NOW(),0),
--- 只读：全部业务菜单（仅查看，按钮级权限未做，见文档）
+-- 只读：仅业务菜单（不授权任何按钮级权限，为真正的只读）
 (7,1,NOW(),NOW(),0),(7,2,NOW(),NOW(),0),(7,3,NOW(),NOW(),0),(7,4,NOW(),NOW(),0),(7,5,NOW(),NOW(),0),
 (7,6,NOW(),NOW(),0),(7,7,NOW(),NOW(),0),(7,8,NOW(),NOW(),0),(7,9,NOW(),NOW(),0);
+
+-- 按钮级权限授权：凡拥有某菜单的角色，自动获得该菜单下所有按钮权限；只读账号(7)除外。
+INSERT INTO `sys_role_menu` (role_id, menu_id, create_time, update_time, deleted)
+SELECT rm.role_id, b.id, NOW(), NOW(), 0
+FROM `sys_role_menu` rm
+JOIN `sys_menu` p ON p.id = rm.menu_id AND p.menu_type = 'MENU'
+JOIN `sys_menu` b ON b.parent_id = p.id AND b.menu_type = 'BUTTON'
+WHERE rm.deleted = 0 AND rm.role_id <> 7;
 
 -- ---------------- 多语言 ----------------
 INSERT INTO `sys_language` (id, lang_code, lang_name, lang_name_en, flag_icon, is_default, status, sort, create_time, update_time, deleted) VALUES

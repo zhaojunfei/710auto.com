@@ -17,6 +17,7 @@ const routes = [
       { path: 'store', name: 'Store', component: () => import('@/views/store/index.vue'), meta: { title: '门店工位' } },
       { path: 'wechat', name: 'Wechat', component: () => import('@/views/wechat/index.vue'), meta: { title: '公众号' } },
       { path: 'system/user', name: 'SysUser', component: () => import('@/views/system/user.vue'), meta: { title: '用户角色' } },
+      { path: 'system/menu-manage', name: 'SysMenuManage', component: () => import('@/views/system/menu-manage.vue'), meta: { title: '菜单管理' } },
       { path: 'system/config', name: 'SysConfig', component: () => import('@/views/system/config.vue'), meta: { title: '系统参数' } },
       { path: 'system/language', name: 'SysLanguage', component: () => import('@/views/system/language.vue'), meta: { title: '多语言配置' } },
       { path: 'system/menu', name: 'SysMenu', component: () => import('@/views/system/menu.vue'), meta: { title: '菜单可视化' } },

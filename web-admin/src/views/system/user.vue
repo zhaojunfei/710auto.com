@@ -45,8 +45,11 @@
       </template>
     </el-dialog>
 
-    <!-- 分配权限（菜单） -->
-    <el-dialog v-model="permDialogVisible" :title="`分配权限 - ${permRole?.roleName || ''}`" width="520px">
+    <!-- 分配权限（菜单 + 按钮） -->
+    <el-dialog v-model="permDialogVisible" :title="`分配权限 - ${permRole?.roleName || ''}`" width="560px">
+      <p class="text-muted" style="margin-top:0">
+        勾选「目录/菜单」控制可见页面；勾选「按钮」控制新增/编辑/删除等操作权限。
+      </p>
       <el-tree
         ref="permTreeRef"
         :data="menuTree"
@@ -54,7 +57,16 @@
         show-checkbox
         default-expand-all
         :props="{ label: 'menuName', children: 'children' }"
-      />
+        style="max-height: 460px; overflow: auto"
+      >
+        <template #default="{ data }">
+          <span style="display: inline-flex; align-items: center; gap: 6px">
+            <el-tag size="small" effect="plain" :type="menuTypeTag(data.menuType)">{{ menuTypeLabel(data.menuType) }}</el-tag>
+            <span>{{ data.menuName }}</span>
+            <span v-if="data.perms" class="text-muted" style="font-size: 12px">{{ data.perms }}</span>
+          </span>
+        </template>
+      </el-tree>
       <template #footer>
         <el-button @click="permDialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="saveRoleMenus">保存</el-button>
@@ -160,6 +172,13 @@ const menuTree = ref<any[]>([])
 const permTreeRef = ref()
 const permDialogVisible = ref(false)
 const permRole = ref<any>(null)
+
+function menuTypeLabel(t: string) {
+  return ({ DIR: '目录', MENU: '菜单', BUTTON: '按钮' } as any)[t] || t
+}
+function menuTypeTag(t: string) {
+  return ({ DIR: 'warning', MENU: 'primary', BUTTON: 'success' } as any)[t] || 'info'
+}
 
 function buildTree(list: any[]): any[] {
   const map: any = {}

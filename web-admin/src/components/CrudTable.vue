@@ -97,6 +97,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { crud } from '@/api'
+import { hasPerm } from '@/utils/perm'
 import ImageUpload from './ImageUpload.vue'
 import RichEditor from './RichEditor.vue'
 
@@ -115,6 +116,8 @@ const props = withDefaults(
     canDelete?: boolean
     emptyText?: string
     defaultForm?: any
+    /** 权限前缀，默认由 url 推导（如 /admin/store-info → store-info）；传空串表示不做权限控制 */
+    perm?: string
   }>(),
   {
     canAdd: true,
@@ -134,10 +137,20 @@ const expand = ref(false)
 const query = reactive<any>({ page: 1, size: 10 })
 const form = ref<any>({})
 
-const canAdd = computed(() => props.canAdd !== false)
-const canEdit = computed(() => props.canEdit !== false)
-const canDelete = computed(() => props.canDelete !== false)
+const canAdd = computed(() => props.canAdd !== false && hasPerm(permOf('add')))
+const canEdit = computed(() => props.canEdit !== false && hasPerm(permOf('edit')))
+const canDelete = computed(() => props.canDelete !== false && hasPerm(permOf('delete')))
 const operationWidth = computed(() => (props as any).operationWidth || 170)
+
+/** 权限前缀：优先取 perm 属性，其次由 url 推导（/admin/store-info → store-info） */
+const permPrefix = computed<string | undefined>(() => {
+  if (props.perm === '') return undefined
+  if (props.perm) return props.perm
+  return props.url.replace(/^\/admin\//, '').replace(/\//g, '-')
+})
+function permOf(action: string) {
+  return permPrefix.value ? `${permPrefix.value}:${action}` : undefined
+}
 const searchFields = computed(() => props.searchFields || [])
 const formFields = computed(() => props.formFields || [])
 const visibleSearch = computed(() => (expand.value ? searchFields.value : searchFields.value.slice(0, 4)))

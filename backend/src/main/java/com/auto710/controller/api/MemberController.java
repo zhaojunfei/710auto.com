@@ -24,7 +24,7 @@ import java.util.Map;
  * 【小程序 / H5】会员中心接口（UnionID 与公众号互通）
  */
 @Tag(name = "会员中心")
-@RestController
+@RestController("memberApiController")
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
 public class MemberController {

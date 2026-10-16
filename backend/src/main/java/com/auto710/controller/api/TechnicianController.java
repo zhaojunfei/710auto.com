@@ -27,7 +27,7 @@ import java.util.Map;
  * <p>权限：仅看本技师被派工单，不可改价（改价需店长）。</p>
  */
 @Tag(name = "接车技师端")
-@RestController
+@RestController("technicianApiController")
 @RequestMapping("/api/tech")
 @RequiredArgsConstructor
 public class TechnicianController {

@@ -4,7 +4,6 @@ import com.auto710.biz.WorkOrderBizService;
 import com.auto710.common.annotation.AuditLog;
 import com.auto710.common.api.Result;
 import com.auto710.common.context.UserContext;
-import com.auto710.common.web.BaseController;
 import com.auto710.entity.*;
 import com.auto710.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -22,7 +21,7 @@ import java.util.Map;
 @Tag(name = "工单管理")
 @RestController
 @RequestMapping("/api/admin/work-order")
-public class AdminWorkOrderController extends BaseController<WorkOrderService, WorkOrder> {
+public class AdminWorkOrderController {
 
     private final WorkOrderBizService bizService;
     private final WorkOrderItemService itemService;
@@ -30,13 +29,11 @@ public class AdminWorkOrderController extends BaseController<WorkOrderService, W
     private final WorkOrderLogService logService;
     private final RefundRecordService refundService;
 
-    public AdminWorkOrderController(WorkOrderService service,
-                                    WorkOrderBizService bizService,
+    public AdminWorkOrderController(WorkOrderBizService bizService,
                                     WorkOrderItemService itemService,
                                     WorkOrderCheckService checkService,
                                     WorkOrderLogService logService,
                                     RefundRecordService refundService) {
-        super(service);
         this.bizService = bizService;
         this.itemService = itemService;
         this.checkService = checkService;

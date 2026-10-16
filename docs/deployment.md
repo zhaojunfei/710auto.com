@@ -85,7 +85,7 @@ nohup java -Xms512m -Xmx1024m -Dfile.encoding=UTF-8 \
 关键环境变量（可用 `application-prod.yml` 或环境变量覆盖）：
 
 ```ini
-SPRING_DATASOURCE_URL=jdbc:mysql://127.0.0.1:3306/auto_repair?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai&useSSL=false
+SPRING_DATASOURCE_URL=jdbc:mysql://127.0.0.1:3306/auto_repair?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
 SPRING_DATASOURCE_USERNAME=auto_repair_app
 SPRING_DATASOURCE_PASSWORD=******
 SPRING_DATA_REDIS_HOST=127.0.0.1

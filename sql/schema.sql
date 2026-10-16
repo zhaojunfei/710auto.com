@@ -6,6 +6,13 @@
 CREATE DATABASE IF NOT EXISTS `auto_repair` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `auto_repair`;
 SET NAMES utf8mb4;
+
+-- 应用数据库账号：本地手工初始化时需要；docker 首次初始化由镜像环境变量自动创建，此处为幂等兜底
+CREATE USER IF NOT EXISTS 'auto_repair_app'@'%' IDENTIFIED BY 'auto710@2026';
+CREATE USER IF NOT EXISTS 'auto_repair_app'@'localhost' IDENTIFIED BY 'auto710@2026';
+GRANT ALL PRIVILEGES ON `auto_repair`.* TO 'auto_repair_app'@'%';
+GRANT ALL PRIVILEGES ON `auto_repair`.* TO 'auto_repair_app'@'localhost';
+FLUSH PRIVILEGES;
 -- 系统用户
 DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user` (

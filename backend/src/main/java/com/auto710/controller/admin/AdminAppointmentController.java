@@ -3,10 +3,7 @@ package com.auto710.controller.admin;
 import com.auto710.biz.AppointmentBizService;
 import com.auto710.common.annotation.AuditLog;
 import com.auto710.common.api.Result;
-import com.auto710.common.web.BaseController;
 import com.auto710.entity.WorkOrder;
-import com.auto710.entity.Appointment;
-import com.auto710.service.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +16,11 @@ import java.time.LocalDate;
 @Tag(name = "预约管理")
 @RestController
 @RequestMapping("/api/admin/appointment")
-public class AdminAppointmentController extends BaseController<AppointmentService, Appointment> {
+public class AdminAppointmentController {
 
     private final AppointmentBizService bizService;
 
-    public AdminAppointmentController(AppointmentService service, AppointmentBizService bizService) {
-        super(service);
+    public AdminAppointmentController(AppointmentBizService bizService) {
         this.bizService = bizService;
     }
 

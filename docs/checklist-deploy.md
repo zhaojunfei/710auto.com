@@ -4,7 +4,7 @@
 
 - [ ] `.env` 中所有密码/密钥已改为强随机值（MySQL / Redis / RabbitMQ / MinIO / JWT / AES）。
 - [ ] `JWT_SECRET` ≥ 32 位；`AES_KEY` 为 16/24/32 位。
-- [ ] 数据库字符集为 `utf8mb4`，连接串含 `characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai`。
+- [ ] 数据库字符集为 `utf8mb4`，连接串含 `characterEncoding=UTF-8&serverTimezone=Asia/Shanghai`。
 - [ ] 已执行 `sql/schema.sql` 与 `sql/data.sql`，58 张表齐全。
 - [ ] 默认账号 `admin/manager/tech01/finance`（初始密码 `admin123`）**已全部改密**。
 

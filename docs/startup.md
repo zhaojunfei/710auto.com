@@ -5,6 +5,28 @@
 
 ---
 
+## 一键启动（Windows，推荐）
+
+项目根目录提供了三个双击即用的脚本：
+
+| 脚本 | 作用 |
+| --- | --- |
+| `start.bat` | 一键启动 **后端 + 后台 + 官网 + H5**（各开一个窗口），并自动打开浏览器 |
+| `stop.bat` | 停止以上服务（按端口 8080/5173/5174/5175 结束进程） |
+| `start-docker.bat` | 用 Docker Compose 一键部署（需先装 Docker Desktop） |
+
+说明：
+
+- 首次运行 `start.bat`：若 `backend/target/auto710-backend.jar` 不存在会自动 `mvn package`；
+  某个前端缺 `node_modules` 会自动 `npm install`（较慢，请耐心等待）。
+- 想强制重建后端：`start.bat build`。
+- 已启动的服务（端口被占用）会自动跳过，不会重复启动。
+- 脚本内已设定控制台编码为 GBK，中文提示可正常显示。
+- 需要本机已装好 **MySQL 8** 并已导入 `sql/schema.sql` + `sql/data.sql`。
+  Redis / RabbitMQ 未启动时后端仍可运行（消息、缓存相关功能降级）。
+
+---
+
 ## 0. 一共有几个端？
 
 | 端 | 目录 | 本地端口 | 入口 |

@@ -56,6 +56,18 @@
 
 ## 三、快速开始
 
+### 0. Windows 一键启动（最简单）
+
+> 已装好 JDK 17 / Node 18+ / MySQL 8（并导入过 `sql/` 两个脚本）后，直接双击项目根目录的脚本：
+
+| 脚本 | 作用 |
+| --- | --- |
+| `start.bat` | 一键启动 后端 + PC后台 + 官网 + H5，并打开浏览器 |
+| `stop.bat` | 停止以上服务 |
+| `start-docker.bat` | 用 Docker Compose 一键部署 |
+
+`start.bat build` 可强制重新构建后端。详见 [docs/startup.md](docs/startup.md)。
+
 ### 1. 后端本地运行
 
 ```bash

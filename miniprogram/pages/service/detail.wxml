@@ -1,0 +1,32 @@
+<view wx:if="{{item}}">
+  <swiper wx:if="{{gallery.length > 1}}" class="gallery" indicator-dots circular>
+    <swiper-item wx:for="{{gallery}}" wx:key="*this">
+      <image src="{{item}}" mode="aspectFill" class="gallery-img" data-src="{{item}}" bindtap="previewImage" />
+    </swiper-item>
+  </swiper>
+  <image wx:else class="single-img" src="{{gallery[0]}}" mode="aspectFill" data-src="{{gallery[0]}}" bindtap="previewImage" />
+
+  <view class="container">
+    <view class="card">
+      <view class="title">{{displayName}}</view>
+      <view class="between">
+        <text class="price big">{{displayPrice}}</text>
+        <text class="muted">{{T.laborFee}}：{{item.laborFee || '-'}}</text>
+      </view>
+      <view class="specs">
+        <view class="spec between"><text class="muted">{{T.duration}}</text><text>{{item.duration || '-'}} 分钟</text></view>
+        <view class="spec between"><text class="muted">{{T.price}}</text><text>{{item.priceDesc || '-'}}</text></view>
+        <view class="spec between"><text class="muted">可预约</text><text>{{item.bookable === 1 ? '支持' : '不支持'}}</text></view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="title">{{T.viewDetail}}</view>
+      <rich-text nodes="{{displayDesc}}"></rich-text>
+      <view class="empty" wx:if="{{!displayDesc}}">暂无详情</view>
+    </view>
+
+    <button class="btn block" bindtap="bookNow" style="margin-bottom:40rpx">{{T.bookNow}}</button>
+  </view>
+</view>
+<view class="empty" wx:else>加载中...</view>

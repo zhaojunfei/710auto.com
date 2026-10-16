@@ -1,0 +1,26 @@
+<view class="container">
+  <view class="card empty" wx:if="{{!logged}}">
+    <view>登录后可查看您的预约记录</view>
+    <button class="btn" bindtap="login" style="margin-top:24rpx;width:60%">微信登录</button>
+  </view>
+
+  <block wx:else>
+    <button class="btn ghost block" bindtap="create" style="margin-bottom:20rpx">+ 新建预约</button>
+
+    <view class="card" wx:for="{{list}}" wx:key="id">
+      <view class="between">
+        <text class="item-title">{{item.itemName || '汽车服务'}}</text>
+        <text class="status">{{item.statusLabel}}</text>
+      </view>
+      <view class="muted">车牌：{{item.plateNo || '-'}}</view>
+      <view class="muted">到店时间：{{item.timeLabel}}</view>
+      <view class="between" style="margin-top:16rpx">
+        <text class="muted">预约号：{{item.appointmentNo || item.id}}</text>
+        <button class="btn ghost" size="mini" data-id="{{item.id}}" bindtap="cancel">取消预约</button>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{!list.length && !loading}}">{{T.empty}}</view>
+    <view class="loading" wx:if="{{loading}}">加载中...</view>
+  </block>
+</view>

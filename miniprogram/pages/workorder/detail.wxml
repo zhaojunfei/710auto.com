@@ -1,0 +1,31 @@
+<view class="container" wx:if="{{order}}">
+  <view class="card">
+    <view class="between">
+      <text class="title" style="margin:0">{{order.orderNo || ('工单 #' + order.id)}}</text>
+      <text class="status">{{order.statusLabel}}</text>
+    </view>
+    <view class="spec between"><text class="muted">车牌</text><text>{{order.plateNo || '-'}}</text></view>
+    <view class="spec between"><text class="muted">进店时间</text><text>{{order.timeLabel}}</text></view>
+    <view class="spec between"><text class="muted">合计</text><text class="price">{{order.amountLabel}}</text></view>
+  </view>
+
+  <view class="card">
+    <view class="title">施工/用料明细</view>
+    <view class="spec between" wx:for="{{items}}" wx:key="id">
+      <text>{{item.itemName || item.partName || '项目'}} × {{item.quantity || 1}}</text>
+      <text class="price">{{item.amountLabel}}</text>
+    </view>
+    <view class="empty" wx:if="{{!items.length}}">暂无明细</view>
+  </view>
+
+  <view class="card">
+    <view class="title">操作</view>
+    <view class="row" style="gap:16rpx;flex-wrap:wrap">
+      <button class="btn" bindtap="confirmQuote">确认报价</button>
+      <button class="btn" data-type="WECHAT" bindtap="pay">{{T.wechatPay}}</button>
+      <button class="btn ghost" data-type="BALANCE" bindtap="pay">{{T.useBalance}}</button>
+      <button class="btn ghost" bindtap="evaluate">{{T.evaluate}}</button>
+    </view>
+  </view>
+</view>
+<view class="empty" wx:else>加载中...</view>

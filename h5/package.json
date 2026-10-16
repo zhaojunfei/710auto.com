@@ -1,0 +1,22 @@
+{
+  "name": "auto710-h5",
+  "version": "1.0.0",
+  "private": true,
+  "description": "710号汽车之家 H5 移动端（客户预约 / 工单查询 / 接车技师端）",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "vue": "^3.5.10",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8"
+  }
+}

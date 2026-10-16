@@ -1,0 +1,28 @@
+<view class="container">
+  <view class="card notice">
+    <view class="title" style="margin:0">{{T.tireStorage}}</view>
+    <view class="muted">换季存胎 · 到期自动提醒 · 取胎核销凭证，专业恒温仓储。</view>
+  </view>
+
+  <view class="card empty" wx:if="{{!logged}}">
+    <view>登录后可在线下单存胎、查看寄存单与取胎凭证</view>
+    <button class="btn" bindtap="login" style="margin-top:24rpx;width:60%">微信登录</button>
+  </view>
+
+  <block wx:else>
+    <button class="btn block" bindtap="create" style="margin-bottom:20rpx">+ {{T.checkIn}}</button>
+
+    <view class="card" wx:for="{{list}}" wx:key="id" data-id="{{item.id}}" bindtap="detail">
+      <view class="between">
+        <text class="item-title">{{item.storageNo || ('寄存单 #' + item.id)}}</text>
+        <text class="status">{{item.statusLabel}}</text>
+      </view>
+      <view class="muted">车牌：{{item.plateNo || '-'}}</view>
+      <view class="muted">轮胎数量：{{item.tireCount || '-'}}</view>
+      <view class="muted">寄存费：{{item.feeLabel}}</view>
+      <view class="muted">入库时间：{{item.timeLabel}}</view>
+    </view>
+
+    <view class="empty" wx:if="{{!list.length && !loading}}">{{T.empty}}</view>
+  </block>
+</view>

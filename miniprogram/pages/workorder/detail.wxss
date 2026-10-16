@@ -1,0 +1,3 @@
+.status { color: #1f6feb; font-size: 26rpx; }
+.spec { padding: 16rpx 0; border-bottom: 1rpx solid #eef0f3; }
+.spec:last-child { border-bottom: none; }

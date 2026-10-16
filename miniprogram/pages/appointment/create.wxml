@@ -1,0 +1,33 @@
+<view class="container">
+  <view class="card">
+    <view class="title">{{T.appointment}}</view>
+
+    <label>{{T.selectService}}</label>
+    <picker mode="selector" range="{{services}}" range-key="name" value="{{serviceIndex}}" bindchange="onServiceChange">
+      <view class="picker-value">{{serviceIndex >= 0 ? services[serviceIndex].name : '请选择'}}</view>
+    </picker>
+
+    <label>{{T.selectTime}}</label>
+    <view class="row">
+      <picker mode="date" value="{{date}}" bindchange="onDateChange" style="flex:1">
+        <view class="picker-value">{{date}}</view>
+      </picker>
+      <picker mode="time" value="{{time}}" bindchange="onTimeChange" style="flex:1;margin-left:16rpx">
+        <view class="picker-value">{{time}}</view>
+      </picker>
+    </view>
+
+    <label>{{T.vehicleInfo}}</label>
+    <input placeholder="{{T.plateNo}}" data-field="plateNo" value="{{plateNo}}" bindinput="onInput" />
+    <view class="row" style="margin-top:16rpx">
+      <input placeholder="{{T.brand}}" data-field="brand" value="{{brand}}" bindinput="onInput" style="flex:1" />
+      <input placeholder="{{T.model}}" data-field="model" value="{{model}}" bindinput="onInput" style="flex:1;margin-left:16rpx" />
+    </view>
+    <input placeholder="{{T.mileage}}" data-field="mileage" value="{{mileage}}" bindinput="onInput" type="number" style="margin-top:16rpx" />
+
+    <label>备注</label>
+    <textarea placeholder="补充说明（选填）" data-field="remark" value="{{remark}}" bindinput="onInput" />
+  </view>
+
+  <button class="btn block" loading="{{submitting}}" bindtap="submit">{{T.submitAppointment}}</button>
+</view>

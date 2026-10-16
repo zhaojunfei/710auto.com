@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/service/list",
+    "pages/service/detail",
+    "pages/appointment/create",
+    "pages/appointment/list",
+    "pages/workorder/list",
+    "pages/workorder/detail",
+    "pages/tire/index",
+    "pages/tire/create",
+    "pages/member/vehicles",
+    "pages/member/coupons",
+    "pages/article/list",
+    "pages/article/detail",
+    "pages/contact/index",
+    "pages/mine/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1f6feb",
+    "navigationBarTitleText": "710号汽车之家",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6f8"
+  },
+  "tabBar": {
+    "color": "#8a8f99",
+    "selectedColor": "#1f6feb",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页" },
+      { "pagePath": "pages/service/list", "text": "服务" },
+      { "pagePath": "pages/appointment/list", "text": "预约" },
+      { "pagePath": "pages/mine/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于门店导航"
+    }
+  }
+}

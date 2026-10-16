@@ -1,0 +1,32 @@
+<view class="container">
+  <button class="btn block" bindtap="toggleForm" style="margin-bottom:20rpx">{{showForm ? T.cancel : '+ 绑定车辆'}}</button>
+
+  <view class="card" wx:if="{{showForm}}">
+    <label>{{T.plateNo}}</label>
+    <input placeholder="如 京A12345" data-field="plateNo" value="{{form.plateNo}}" bindinput="onInput" />
+    <view class="row" style="margin-top:16rpx">
+      <input placeholder="{{T.brand}}" data-field="brand" value="{{form.brand}}" bindinput="onInput" style="flex:1" />
+      <input placeholder="{{T.model}}" data-field="model" value="{{form.model}}" bindinput="onInput" style="flex:1;margin-left:16rpx" />
+    </view>
+    <input placeholder="{{T.mileage}}" type="number" data-field="mileage" value="{{form.mileage}}" bindinput="onInput" style="margin-top:16rpx" />
+    <view class="row" style="margin-top:16rpx">
+      <text class="muted">设为默认车辆</text>
+      <switch checked="{{form.isDefault === 1}}" bindchange="bindDefault" style="margin-left:16rpx" />
+    </view>
+    <button class="btn block" bindtap="submit" style="margin-top:24rpx">{{T.submit}}</button>
+  </view>
+
+  <view class="card" wx:for="{{list}}" wx:key="id">
+    <view class="between">
+      <text class="vehicle-plate">{{item.plateNo}}</text>
+      <text class="tag" wx:if="{{item.isDefault === 1}}">默认</text>
+    </view>
+    <view class="muted">{{item.brand || ''}} {{item.model || ''}}</view>
+    <view class="muted">里程：{{item.mileage || '-'}} km</view>
+    <view style="text-align:right;margin-top:8rpx">
+      <text class="del" data-id="{{item.id}}" bindtap="remove">解绑</text>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{!list.length && !showForm}}">暂无绑定车辆</view>
+</view>

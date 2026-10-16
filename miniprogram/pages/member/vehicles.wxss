@@ -1,0 +1,2 @@
+.vehicle-plate { font-size: 32rpx; font-weight: 700; letter-spacing: 2rpx; }
+.del { color: #e5484d; font-size: 26rpx; }

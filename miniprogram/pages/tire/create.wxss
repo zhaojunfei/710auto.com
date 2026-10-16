@@ -1,0 +1,7 @@
+.picker-value { background: #f5f6f8; border-radius: 10rpx; padding: 18rpx; font-size: 28rpx; }
+.spec { padding: 16rpx 0; border-bottom: 1rpx solid #eef0f3; }
+.spec:last-child { border-bottom: none; }
+.add { color: #1f6feb; font-size: 26rpx; }
+.del { color: #e5484d; font-size: 26rpx; }
+.tire-item { border: 1rpx solid #eef0f3; border-radius: 12rpx; padding: 16rpx; margin-top: 16rpx; }
+.proof-img { width: 150rpx; height: 150rpx; border-radius: 10rpx; margin: 8rpx 8rpx 0 0; background: #eef2f7; }

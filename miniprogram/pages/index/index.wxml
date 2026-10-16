@@ -1,0 +1,92 @@
+<view class="hero">
+  <view class="h1">{{site.siteName || '710号汽车之家'}}</view>
+  <view class="h2">专业技师 · 透明报价 · 连锁门店</view>
+  <view class="lang-row">
+    <view
+      wx:for="{{languages}}"
+      wx:key="langCode"
+      class="lang-item {{item.langCode === locale ? 'active' : ''}}"
+      data-code="{{item.langCode}}"
+      bindtap="switchLang"
+    >{{item.langName}}</view>
+  </view>
+</view>
+
+<view class="container">
+  <!-- Banner -->
+  <swiper wx:if="{{banners.length}}" class="banner" indicator-dots autoplay circular>
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <image src="{{item.image}}" mode="aspectFill" class="banner-img" />
+    </swiper-item>
+  </swiper>
+
+  <!-- 服务分类快捷入口 -->
+  <view class="card" wx:if="{{categories.length}}">
+    <view class="grid">
+      <view
+        class="cell quick"
+        wx:for="{{categories}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="goCategory"
+      >
+        <view class="quick-icon">{{item.categoryName ? item.categoryName[0] : '服'}}</view>
+        <view class="quick-text">{{item.categoryName}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热门服务 -->
+  <view class="section-title">{{T.hotService}}</view>
+  <view class="grid">
+    <view class="cell card service-card" wx:for="{{hotItems}}" wx:key="id" data-id="{{item.id}}" bindtap="goService">
+      <image class="service-cover" src="{{item.cover}}" mode="aspectFill" />
+      <view class="service-name">{{item.itemName}}</view>
+      <view class="between">
+        <text class="price">{{item.price}}</text>
+        <text class="tag" wx:if="{{item.bookable === 1}}">可预约</text>
+      </view>
+    </view>
+  </view>
+  <view class="empty" wx:if="{{!hotItems.length}}">暂无服务</view>
+
+  <!-- 存胎寄存入口 -->
+  <view class="card entry" bindtap="goTire">
+    <view>
+      <view class="entry-title">{{T.tireStorage}}</view>
+      <view class="muted">换季存胎 / 到期提醒 / 取胎核销凭证</view>
+    </view>
+    <view class="entry-arrow">›</view>
+  </view>
+
+  <!-- 施工案例 -->
+  <view class="section-title">{{T.cases}}</view>
+  <view class="grid">
+    <view class="cell card" wx:for="{{cases}}" wx:key="id">
+      <image class="service-cover" src="{{item.cover}}" mode="aspectFill" />
+      <view class="service-name">{{item.caseName}}</view>
+    </view>
+  </view>
+  <view class="empty" wx:if="{{!cases.length}}">暂无案例</view>
+
+  <!-- 养护知识 -->
+  <view class="section-title" bindtap="goArticles">{{T.knowledge}}</view>
+  <view class="card" wx:for="{{articles}}" wx:key="id">
+    <view class="between">
+      <text class="article-title">{{item.title}}</text>
+    </view>
+    <view class="muted">{{item.summary || ''}}</view>
+  </view>
+
+  <!-- 门店 -->
+  <view class="card">
+    <view class="section-title" style="margin-top:0">{{T.brandIntro}}</view>
+    <view class="muted">{{store.intro || ''}}</view>
+    <view class="between" style="margin-top:16rpx">
+      <text class="muted">{{store.address || ''}}</text>
+      <button class="btn ghost" size="mini" bindtap="openLocation">{{T.navigation}}</button>
+    </view>
+  </view>
+
+  <button class="btn block" bindtap="goBook" style="margin:20rpx 0 40rpx">{{T.bookNow}}</button>
+</view>

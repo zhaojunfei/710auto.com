@@ -1,0 +1,9 @@
+.search { background: #fff; border-radius: 12rpx; padding: 18rpx; margin-bottom: 20rpx; }
+.filters { white-space: nowrap; margin-bottom: 20rpx; }
+.filter { display: inline-block; background: #fff; border-radius: 24rpx; padding: 10rpx 28rpx; margin-right: 16rpx; font-size: 26rpx; color: #6b7280; }
+.filter.active { background: #1f6feb; color: #fff; }
+.service-card { overflow: hidden; }
+.service-cover { width: 100%; height: 220rpx; border-radius: 12rpx; background: #eef2f7; margin-bottom: 12rpx; }
+.service-name { font-size: 28rpx; font-weight: 600; margin-bottom: 6rpx; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; margin-bottom: 10rpx; }
+.loading { text-align: center; color: #8a8f99; padding: 24rpx; font-size: 26rpx; }

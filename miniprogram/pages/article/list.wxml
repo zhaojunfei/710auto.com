@@ -1,0 +1,9 @@
+<view class="container">
+  <view class="card article" wx:for="{{list}}" wx:key="id" data-id="{{item.id}}" bindtap="detail">
+    <image wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill" class="article-cover" />
+    <view class="article-title">{{item.displayTitle}}</view>
+    <view class="muted">{{item.displaySummary || ''}}</view>
+    <view class="muted small">{{item.publishTime || ''}} · 阅读 {{item.viewCount || 0}}</view>
+  </view>
+  <view class="empty" wx:if="{{!list.length && !loading}}">{{T.empty}}</view>
+</view>

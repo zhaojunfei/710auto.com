@@ -1,0 +1,94 @@
+<view class="container">
+  <!-- 只读：寄存单详情 -->
+  <block wx:if="{{readonly && order}}">
+    <view class="card">
+      <view class="title" style="margin:0">{{order.storageNo || ('寄存单 #' + order.id)}}</view>
+      <view class="spec between"><text class="muted">车牌</text><text>{{order.plateNo || '-'}}</text></view>
+      <view class="spec between"><text class="muted">轮胎数量</text><text>{{order.tireCount || '-'}}</text></view>
+      <view class="spec between"><text class="muted">寄存费</text><text class="price">{{order.feeLabel}}</text></view>
+      <view class="spec between"><text class="muted">存放位置</text><text>{{order.positionNo || '-'}}</text></view>
+      <view class="spec between"><text class="muted">起始日期</text><text>{{order.timeLabel}}</text></view>
+    </view>
+
+    <view class="card">
+      <view class="title">轮胎清单</view>
+      <view class="spec between" wx:for="{{items}}" wx:key="id">
+        <text>{{item.tirePosition || '轮胎'}} {{item.tireBrand || ''}} {{item.tireSize || ''}}</text>
+        <text class="muted">花纹 {{item.treadDepth || '-'}}mm</text>
+      </view>
+      <view class="empty" wx:if="{{!items.length}}">暂无明细</view>
+    </view>
+
+    <view class="card">
+      <view class="title">凭证（入库 / 取胎留证）</view>
+      <view wx:for="{{proofs}}" wx:key="id" style="margin-bottom:16rpx">
+        <view class="muted">{{item.proofType}} · {{item.proofTime}}</view>
+        <view class="row" style="flex-wrap:wrap">
+          <image
+            wx:for="{{item.images}}"
+            wx:for-item="img"
+            wx:key="*this"
+            src="{{img}}"
+            class="proof-img"
+            data-src="{{img}}"
+            data-images="{{item.images}}"
+            bindtap="previewProof"
+          />
+        </view>
+      </view>
+      <view class="empty" wx:if="{{!proofs.length}}">暂无凭证</view>
+    </view>
+  </block>
+
+  <!-- 下单表单 -->
+  <block wx:else>
+    <view class="card">
+      <view class="title">{{T.checkIn}}</view>
+      <label>车牌号</label>
+      <input placeholder="请输入车牌号" data-field="plateNo" value="{{form.plateNo}}" bindinput="onFormInput" />
+      <label>轮胎类型</label>
+      <input placeholder="四季胎 / 雪地胎" data-field="tireType" value="{{form.tireType}}" bindinput="onFormInput" />
+      <label>现场存放位置（可选）</label>
+      <input placeholder="如 A-01" data-field="positionNo" value="{{form.positionNo}}" bindinput="onFormInput" />
+      <view class="row" style="margin-top:20rpx">
+        <view style="flex:1">
+          <label>起始日期</label>
+          <picker mode="date" value="{{form.startDate}}" data-field="startDate" bindchange="onDateChange">
+            <view class="picker-value">{{form.startDate}}</view>
+          </picker>
+        </view>
+        <view style="flex:1;margin-left:16rpx">
+          <label>到期日期</label>
+          <picker mode="date" value="{{form.endDate}}" data-field="endDate" bindchange="onDateChange">
+            <view class="picker-value">{{form.endDate}}</view>
+          </picker>
+        </view>
+      </view>
+      <label>到期提醒</label>
+      <input placeholder="提前7天" data-field="remindPreference" value="{{form.remindPreference}}" bindinput="onFormInput" />
+      <label>备注</label>
+      <textarea placeholder="选填" data-field="remark" value="{{form.remark}}" bindinput="onFormInput" />
+    </view>
+
+    <view class="card">
+      <view class="between">
+        <view class="title" style="margin:0">轮胎清单</view>
+        <view class="add" bindtap="addTire">+ 添加轮胎</view>
+      </view>
+      <view class="tire-item" wx:for="{{tireItems}}" wx:key="index">
+        <view class="between">
+          <text class="muted">轮胎 {{index + 1}}</text>
+          <text class="del" data-index="{{index}}" bindtap="removeTire">删除</text>
+        </view>
+        <input placeholder="位置（左前/右后）" data-index="{{index}}" data-field="tirePosition" value="{{item.tirePosition}}" bindinput="onTireInput" />
+        <view class="row" style="margin-top:12rpx">
+          <input placeholder="品牌" data-index="{{index}}" data-field="tireBrand" value="{{item.tireBrand}}" bindinput="onTireInput" style="flex:1" />
+          <input placeholder="规格 205/55R16" data-index="{{index}}" data-field="tireSize" value="{{item.tireSize}}" bindinput="onTireInput" style="flex:1;margin-left:12rpx" />
+        </view>
+        <input placeholder="花纹深度(mm)" type="digit" data-index="{{index}}" data-field="treadDepth" value="{{item.treadDepth}}" bindinput="onTireInput" style="margin-top:12rpx" />
+      </view>
+    </view>
+
+    <button class="btn block" loading="{{submitting}}" bindtap="submit">{{T.submit}}</button>
+  </block>
+</view>

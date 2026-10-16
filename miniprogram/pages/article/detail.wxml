@@ -1,0 +1,7 @@
+<view class="container" wx:if="{{article}}">
+  <view class="title">{{article.title}}</view>
+  <view class="muted small">{{article.publishTime || ''}} · {{article.author || '710号汽车之家'}}</view>
+  <image wx:if="{{article.cover}}" src="{{article.cover}}" mode="widthFix" class="cover-img" />
+  <rich-text nodes="{{content}}"></rich-text>
+</view>
+<view class="empty" wx:else>加载中...</view>

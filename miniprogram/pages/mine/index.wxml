@@ -1,0 +1,60 @@
+<view class="container">
+  <!-- 会员卡片 -->
+  <view class="card profile" wx:if="{{logged && profile}}">
+    <image class="avatar" wx:if="{{profile.avatar}}" src="{{profile.avatar}}" mode="aspectFill" />
+    <view class="avatar avatar-fallback" wx:else>{{(profile.nickname || 'U')[0]}}</view>
+    <view class="profile-info">
+      <view class="nickname">{{profile.nickname || '微信用户'}}</view>
+      <view class="muted">会员等级 {{profile.levelId || '普通会员'}}</view>
+    </view>
+    <view class="assets">
+      <view class="asset"><text class="num">{{profile.pointsLabel}}</text><text class="label">{{T.points}}</text></view>
+      <view class="asset"><text class="num">{{profile.balanceLabel}}</text><text class="label">{{T.balance}}</text></view>
+    </view>
+  </view>
+
+  <view class="card empty" wx:else>
+    <view>登录后享受会员权益：积分、储值、优惠券、存胎管理</view>
+    <button class="btn" bindtap="login" style="margin-top:24rpx;width:60%">{{T.login}}</button>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="card menu">
+    <view class="menu-item between" data-url="/pages/workorder/list" bindtap="go">
+      <text>{{T.workorders}}</text><text class="arrow">›</text>
+    </view>
+    <view class="menu-item between" data-url="/pages/appointment/list" bindtap="go">
+      <text>{{T.appointments || '我的预约'}}</text><text class="arrow">›</text>
+    </view>
+    <view class="menu-item between" data-url="/pages/member/vehicles" bindtap="go">
+      <text>{{T.myVehicles}}</text><text class="arrow">›</text>
+    </view>
+    <view class="menu-item between" data-url="/pages/member/coupons" bindtap="go">
+      <text>{{T.coupons}}</text><text class="arrow">›</text>
+    </view>
+    <view class="menu-item between" data-url="/pages/tire/index" bindtap="go">
+      <text>{{T.tireStorage}}</text><text class="arrow">›</text>
+    </view>
+    <view class="menu-item between" bindtap="contact">
+      <text>{{T.contact}}</text><text class="arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 语言切换 -->
+  <view class="card">
+    <view class="between">
+      <text>语言 / Language</text>
+      <view class="lang-row">
+        <view
+          wx:for="{{languages}}"
+          wx:key="langCode"
+          class="lang-item {{item.langCode === locale ? 'active' : ''}}"
+          data-code="{{item.langCode}}"
+          bindtap="switchLang"
+        >{{item.langName}}</view>
+      </view>
+    </view>
+  </view>
+
+  <button class="btn ghost block" wx:if="{{logged}}" bindtap="logout" style="margin-bottom:40rpx">{{T.logout}}</button>
+</view>

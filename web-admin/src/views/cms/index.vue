@@ -69,8 +69,8 @@ const caseForm = [
   { prop: 'caseName', label: '案例名称' }, { prop: 'caseNameEn', label: '英文名称' },
   { prop: 'caseType', label: '类型', type: 'select', options: ['维修', '保养', '美容', '存胎'].map((v) => ({ label: v, value: v })) },
   { prop: 'cover', label: '封面', type: 'image', span: 24 },
-  { prop: 'beforeImages', label: '施工前图集', type: 'image', span: 24, dir: 'case' },
-  { prop: 'afterImages', label: '施工后图集', type: 'image', span: 24, dir: 'case' },
+  { prop: 'beforeImages', label: '施工前图集', type: 'image', span: 24, dir: 'case', multiple: true },
+  { prop: 'afterImages', label: '施工后图集', type: 'image', span: 24, dir: 'case', multiple: true },
   { prop: 'content', label: '案例描述', type: 'richtext', span: 24 },
   { prop: 'status', label: '上架', type: 'switch' }
 ]
@@ -79,7 +79,7 @@ const brandColumns = [{ prop: 'title', label: '标题' }, { prop: 'sort', label:
 const brandForm = [
   { prop: 'title', label: '标题' }, { prop: 'titleEn', label: '英文标题' },
   { prop: 'cover', label: '封面', type: 'image', span: 24 },
-  { prop: 'images', label: '门店实拍图集', type: 'image', span: 24, dir: 'store' },
+  { prop: 'images', label: '门店实拍图集', type: 'image', span: 24, dir: 'store', multiple: true },
   { prop: 'content', label: '内容(中文)', type: 'richtext', span: 24 },
   { prop: 'contentEn', label: '内容(English)', type: 'richtext', span: 24 },
   { prop: 'status', label: '启用', type: 'switch' }

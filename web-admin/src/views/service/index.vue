@@ -56,7 +56,7 @@ const formFields = [
   { prop: 'bookable', label: '可预约', type: 'switch' },
   { prop: 'status', label: '上架', type: 'switch' },
   { prop: 'cover', label: '封面图', type: 'image', span: 24 },
-  { prop: 'images', label: '项目图集', type: 'image', span: 24, dir: 'service' },
+  { prop: 'images', label: '项目图集', type: 'image', span: 24, dir: 'service', multiple: true },
   { prop: 'description', label: '项目详情', type: 'richtext', span: 24 }
 ]
 const searchFields = [

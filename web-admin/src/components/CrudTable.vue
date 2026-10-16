@@ -79,7 +79,7 @@
                 <el-option v-for="o in f.options" :key="o.value" :label="o.label" :value="o.value" />
               </el-select>
               <el-switch v-else-if="f.type === 'switch'" v-model="form[f.prop]" :active-value="1" :inactive-value="0" />
-              <image-upload v-else-if="f.type === 'image'" v-model="form[f.prop]" :dir="f.dir || 'images'" />
+              <image-upload v-else-if="f.type === 'image'" v-model="form[f.prop]" :dir="f.dir || 'images'" :multiple="!!f.multiple" />
               <rich-editor v-else-if="f.type === 'richtext'" v-model="form[f.prop]" />
             </el-form-item>
           </el-col>
@@ -100,18 +100,28 @@ import { crud } from '@/api'
 import ImageUpload from './ImageUpload.vue'
 import RichEditor from './RichEditor.vue'
 
-const props = defineProps<{
-  url: string
-  title?: string
-  columns: any[]
-  formFields?: any[]
-  searchFields?: any[]
-  canAdd?: boolean
-  canEdit?: boolean
-  canDelete?: boolean
-  emptyText?: string
-  defaultForm?: any
-}>()
+// 注意：Vue 会把「未显式传入」的 Boolean 类型 prop 强制转换为 false，
+// 因此这里必须用 withDefaults 指定默认为 true，否则任何没写 :can-add="true"
+// 的页面都会丢失「新增 / 编辑 / 删除」按钮。
+const props = withDefaults(
+  defineProps<{
+    url: string
+    title?: string
+    columns: any[]
+    formFields?: any[]
+    searchFields?: any[]
+    canAdd?: boolean
+    canEdit?: boolean
+    canDelete?: boolean
+    emptyText?: string
+    defaultForm?: any
+  }>(),
+  {
+    canAdd: true,
+    canEdit: true,
+    canDelete: true
+  }
+)
 
 const list = ref<any[]>([])
 const total = ref(0)

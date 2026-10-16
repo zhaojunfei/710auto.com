@@ -90,9 +90,14 @@ cd web-admin && npm install && npm run dev     # http://localhost:5173
 # 官网
 cd web-www && npm install && npm run dev       # http://localhost:5174
 
-# H5
+# H5（客户预约 + 接车技师端 + 供应商端 三合一）
 cd h5 && npm install && npm run dev            # http://localhost:5175
+#   客户预约   http://localhost:5175/
+#   技师端     http://localhost:5175/tech/login      （tech01 / admin123）
+#   供应商端   http://localhost:5175/supplier/login  （supplier01 / admin123）
 ```
+
+> 完整、逐步的启动步骤见 **[docs/startup.md](docs/startup.md)**。
 
 ### 3. 小程序
 
@@ -167,6 +172,7 @@ node tools/generate.js
 
 ## 七、文档
 
+- [启动与本地运行指南](docs/startup.md)
 - [部署手册](docs/deployment.md)
 - [系统配置说明（存储 / 微信 / 支付 / 多语言 / 菜单）](docs/configuration.md)
 - [多语言（i18n）方案](docs/multi-language.md)

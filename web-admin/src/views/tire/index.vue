@@ -127,7 +127,7 @@ const itemForm = [
   { prop: 'tireBrand', label: '品牌' },
   { prop: 'tireSize', label: '规格' },
   { prop: 'treadDepth', label: '花纹深度' },
-  { prop: 'images', label: '照片', type: 'image', span: 24, dir: 'tire' },
+  { prop: 'images', label: '照片', type: 'image', span: 24, dir: 'tire', multiple: true },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
 ]
 

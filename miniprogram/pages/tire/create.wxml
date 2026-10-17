@@ -45,7 +45,7 @@
     <view class="card">
       <view class="title">{{T.checkIn}}</view>
       <label>车牌号</label>
-      <plate-input id="plate" value="{{form.plateNo}}" required bindchange="onPlateChange" />
+      <input placeholder="请输入车牌号" data-field="plateNo" value="{{form.plateNo}}" bindinput="onFormInput" />
       <label>轮胎类型</label>
       <input placeholder="四季胎 / 雪地胎" data-field="tireType" value="{{form.tireType}}" bindinput="onFormInput" />
       <label>现场存放位置（可选）</label>

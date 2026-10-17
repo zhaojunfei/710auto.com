@@ -31,14 +31,9 @@ Page({
     this.setData({ 'form.isDefault': e.detail.value ? 1 : 0 })
   },
 
-  onPlateChange(e) {
-    this.setData({ 'form.plateNo': e.detail.value })
-  },
-
   submit() {
-    const pv = this.selectComponent('#plate').validate()
-    if (!pv.ok) {
-      wx.showToast({ title: pv.msg || '请填写车牌号', icon: 'none' })
+    if (!this.data.form.plateNo) {
+      wx.showToast({ title: '请填写车牌号', icon: 'none' })
       return
     }
     request.post('/member/vehicles', this.data.form).then(() => {

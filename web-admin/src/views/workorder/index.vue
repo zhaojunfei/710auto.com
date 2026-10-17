@@ -409,12 +409,12 @@ const apptColumns = [
   { prop: 'status', label: '状态', dict: 'appointment_status', width: 100, tag: true }
 ]
 const apptForm = [
-  { prop: 'plateNo', label: '车牌号', type: 'plate', required: true },
+  { prop: 'plateNo', label: '车牌号', type: 'plate', required: true, span: 24  },
   { prop: 'brandModel', label: '品牌车型' },
   { prop: 'itemName', label: '服务项目' },
   { prop: 'contactName', label: '联系人' },
   { prop: 'contactPhone', label: '联系电话' },
-  { prop: 'appointTime', label: '预约到店时间', span: 24 },
+  { prop: 'appointTime', label: '预约到店时间', type: 'datetime', span: 24 },
   { prop: 'remark', label: '客户备注', type: 'textarea', span: 24 },
   { prop: 'status', label: '状态', type: 'select', dict: 'appointment_status' }
 ]

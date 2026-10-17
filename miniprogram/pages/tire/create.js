@@ -86,14 +86,9 @@ Page({
     this.setData({ ['form.' + e.currentTarget.dataset.field]: e.detail.value })
   },
 
-  onPlateChange(e) {
-    this.setData({ 'form.plateNo': e.detail.value })
-  },
-
   async submit() {
-    const pv = this.selectComponent('#plate').validate()
-    if (!pv.ok) {
-      wx.showToast({ title: pv.msg || '请填写车牌号', icon: 'none' })
+    if (!this.data.form.plateNo) {
+      wx.showToast({ title: '请填写车牌号', icon: 'none' })
       return
     }
     if (!auth.isLogin()) {

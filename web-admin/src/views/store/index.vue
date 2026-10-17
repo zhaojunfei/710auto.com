@@ -88,8 +88,8 @@ const scheduleForm = [
   { prop: 'technicianId', label: '技师', type: 'select', source: { url: '/admin/technician', label: 'techName', value: 'id' } },
   { prop: 'workDate', label: '日期', type: 'date' },
   { prop: 'shift', label: '班次', type: 'select', dict: 'shift' },
-  { prop: 'startTime', label: '开始时间' },
-  { prop: 'endTime', label: '结束时间' },
+  { prop: 'startTime', label: '开始时间', type: 'time' },
+  { prop: 'endTime', label: '结束时间', type: 'time' },
   { prop: 'status', label: '有效', type: 'switch', dict: 'enable_status' }
 ]
 </script>

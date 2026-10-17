@@ -115,6 +115,14 @@
                 placeholder="请选择日期时间"
                 style="width: 100%"
               />
+              <el-time-picker
+                v-else-if="f.type === 'time'"
+                v-model="form[f.prop]"
+                value-format="HH:mm"
+                format="HH:mm"
+                placeholder="请选择时间"
+                style="width: 100%"
+              />
               <el-select v-else-if="f.type === 'select'" v-model="form[f.prop]" :placeholder="'请选择' + f.label" clearable :multiple="!!f.multiple" style="width: 100%">
                 <el-option v-for="o in optionsOf(f)" :key="o.value" :label="o.label" :value="o.value" />
               </el-select>
@@ -323,8 +331,9 @@ function displayValue(row: any, c: any) {
 /** Label 规范：日期类字段统一为「名称(yyyy-MM-dd)」 */
 function fieldLabel(f: any) {
   const label = f.label || ''
-  if (f.type === 'date' && !label.includes('(')) return label
-  if (f.type === 'datetime' && !label.includes('(')) return label 
+  if (label.includes('(')) return label
+  if (f.type === 'date') return label + '(yyyy-MM-dd)'
+  if (f.type === 'datetime') return label + '(yyyy-MM-dd HH:mm:ss)'
   return label
 }
 /** 删除确认文案中的日期统一 (yyyy-MM-dd) */

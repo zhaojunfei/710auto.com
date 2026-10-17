@@ -68,18 +68,14 @@ Page({
   onInput(e) {
     this.setData({ [e.currentTarget.dataset.field]: e.detail.value })
   },
-  onPlateChange(e) {
-    this.setData({ plateNo: e.detail.value })
-  },
 
   async submit() {
     if (this.data.serviceIndex < 0) {
       wx.showToast({ title: '请选择服务项目', icon: 'none' })
       return
     }
-    const pv = this.selectComponent('#plate').validate()
-    if (!pv.ok) {
-      wx.showToast({ title: pv.msg, icon: 'none' })
+    if (!this.data.plateNo) {
+      wx.showToast({ title: '请填写车牌号', icon: 'none' })
       return
     }
     if (!auth.isLogin()) {

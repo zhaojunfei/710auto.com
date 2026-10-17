@@ -18,22 +18,7 @@
         <label>手机号</label>
         <input v-model="contactPhone" placeholder="用于接收预约与施工通知" />
         <label>车牌号</label>
-        <div class="row" style="gap:8px">
-          <select v-model="plateProvince" style="max-width:90px">
-            <option value="">简称</option>
-            <option v-for="p in PROVINCES" :key="p" :value="p">{{ p }}</option>
-          </select>
-          <input
-            v-model="plateRest"
-            :placeholder="plateType === 'green' ? '如 D123456（7位）' : '如 A12345（6位）'"
-            :maxlength="plateType === 'green' ? 7 : 6"
-            style="text-transform:uppercase"
-          />
-        </div>
-        <div class="row" style="gap:16px;margin-top:6px">
-          <label class="muted" style="margin:0"><input type="radio" value="blue" v-model="plateType" /> 蓝牌（油车）</label>
-          <label class="muted" style="margin:0"><input type="radio" value="green" v-model="plateType" /> 绿牌（新能源）</label>
-        </div>
+        <input v-model="plateNo" placeholder="请输入车牌号，如 京A12345" maxlength="8" style="text-transform:uppercase" />
         <label>品牌 / 车型</label>
         <input v-model="brandModel" placeholder="如 大众 迈腾" />
         <label>备注</label>
@@ -48,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { memberApi, publicApi } from '@/api'
 
@@ -64,27 +49,12 @@ const brandModel = ref('')
 const remark = ref('')
 const submitting = ref(false)
 
-/* ---------- 车牌号（行政区简称 + 油/电类型 + 号码，按类型校验） ---------- */
-const PROVINCES = [
-  '京', '津', '冀', '晋', '蒙', '辽', '吉', '黑', '沪', '苏', '浙', '皖', '闽', '赣', '鲁',
-  '豫', '鄂', '湘', '粤', '桂', '琼', '渝', '川', '贵', '云', '藏', '陕', '甘', '青', '宁', '新'
-]
-const plateProvince = ref('')
-const plateRest = ref('')
-const plateType = ref<'blue' | 'green'>('blue')
-const plateNo = computed(() => {
-  const r = (plateRest.value || '').toUpperCase().replace(/\s/g, '')
-  return plateProvince.value && r ? plateProvince.value + r : ''
-})
-/** 蓝牌 7 位（简称+字母+5位）/ 绿牌 8 位（简称+字母+6位），非法格式拦截 */
+/* ---------- 车牌号（直接输入完整车牌，提交前宽松校验） ---------- */
+const plateNo = ref('')
 function plateError(): string {
-  const p = plateProvince.value
-  const r = (plateRest.value || '').toUpperCase().replace(/\s/g, '')
-  if (!p || !r) return '请完整填写车牌号（省份简称 + 号码）'
-  const len = plateType.value === 'green' ? 7 : 6
-  if (!/^[A-Z][A-Z0-9]*$/.test(r)) return '车牌号码须以字母开头，仅含字母与数字'
-  if (r.length !== len) return plateType.value === 'green' ? '新能源绿牌共 8 位（简称+字母+6位）' : '蓝牌共 7 位（简称+字母+5位）'
-  if (/[IO]/.test(r)) return '车牌号码不含字母 I、O'
+  const v = (plateNo.value || '').toUpperCase().replace(/\s/g, '')
+  if (!v) return '请填写车牌号'
+  if (!/^[\u4e00-\u9fa5][A-Z][A-Z0-9]{4,6}$/.test(v)) return '车牌号格式不正确，如 京A12345 / 粤BD12345'
   return ''
 }
 
@@ -104,6 +74,7 @@ async function submit() {
   if (!/^1\d{10}$/.test(contactPhone.value)) { alert('请填写正确的手机号'); return }
   const pe = plateError()
   if (pe) { alert(pe); return }
+  const plate = (plateNo.value || '').toUpperCase().replace(/\s/g, '')
   submitting.value = true
   try {
     await ensureLogin()
@@ -112,7 +83,7 @@ async function submit() {
       itemName: services.value.find((s) => s.id === serviceId.value)?.itemName,
       appointTime: date.value + ' ' + time.value + ':00',
       contactPhone: contactPhone.value,
-      plateNo: plateNo.value,
+      plateNo: plate,
       brandModel: brandModel.value,
       remark: remark.value,
       source: 'h5'

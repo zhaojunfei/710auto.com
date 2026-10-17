@@ -18,7 +18,7 @@
     </view>
 
     <label>{{T.vehicleInfo}}</label>
-    <plate-input id="plate" value="{{plateNo}}" required bindchange="onPlateChange" />
+    <input placeholder="{{T.plateNo}}" data-field="plateNo" value="{{plateNo}}" bindinput="onInput" />
     <view class="row" style="margin-top:16rpx">
       <input placeholder="{{T.brand}}" data-field="brand" value="{{brand}}" bindinput="onInput" style="flex:1" />
       <input placeholder="{{T.model}}" data-field="model" value="{{model}}" bindinput="onInput" style="flex:1;margin-left:16rpx" />

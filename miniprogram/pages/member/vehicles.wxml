@@ -3,7 +3,7 @@
 
   <view class="card" wx:if="{{showForm}}">
     <label>{{T.plateNo}}</label>
-    <input placeholder="如 京A12345" data-field="plateNo" value="{{form.plateNo}}" bindinput="onInput" />
+    <plate-input id="plate" value="{{form.plateNo}}" required bindchange="onPlateChange" />
     <view class="row" style="margin-top:16rpx">
       <input placeholder="{{T.brand}}" data-field="brand" value="{{form.brand}}" bindinput="onInput" style="flex:1" />
       <input placeholder="{{T.model}}" data-field="model" value="{{form.model}}" bindinput="onInput" style="flex:1;margin-left:16rpx" />

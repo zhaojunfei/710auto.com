@@ -34,14 +34,14 @@ const tab = ref('type')
 const typeColumns = [
   { prop: 'dictName', label: '字典名称', minWidth: 140 },
   { prop: 'dictType', label: '类型编码', minWidth: 160 },
-  { prop: 'status', label: '状态', width: 80, tag: true },
+  { prop: 'status', label: '状态', dict: 'enable_status', width: 80, tag: true },
   { prop: 'remark', label: '备注', minWidth: 160 },
   { prop: 'createTime', label: '创建时间', width: 170 }
 ]
 const typeForm = [
   { prop: 'dictName', label: '字典名称' },
   { prop: 'dictType', label: '类型编码' },
-  { prop: 'status', label: '启用', type: 'switch' },
+  { prop: 'status', label: '启用', type: 'switch', dict: 'enable_status' },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
 ]
 
@@ -51,7 +51,7 @@ const dataColumns = [
   { prop: 'dictValue', label: '键值', width: 120 },
   { prop: 'dictSort', label: '排序', width: 80 },
   { prop: 'cssClass', label: '样式', width: 110 },
-  { prop: 'status', label: '状态', width: 80, tag: true },
+  { prop: 'status', label: '状态', dict: 'enable_status', width: 80, tag: true },
   { prop: 'remark', label: '备注', minWidth: 140 }
 ]
 const dataForm = [
@@ -60,7 +60,7 @@ const dataForm = [
   { prop: 'dictValue', label: '字典键值' },
   { prop: 'dictSort', label: '排序', type: 'number' },
   { prop: 'cssClass', label: '样式类' },
-  { prop: 'status', label: '启用', type: 'switch' },
+  { prop: 'status', label: '启用', type: 'switch', dict: 'enable_status' },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
 ]
 </script>

@@ -15,10 +15,10 @@
         <crud-table url="/admin/part-stock-record" title="流水" :columns="recordColumns" :can-add="false" :can-edit="false" :search-fields="[{ prop: 'partNameLike', label: '配件名称' }]" />
       </el-tab-pane>
       <el-tab-pane label="配件分类" name="category">
-        <crud-table url="/admin/part-category" title="分类" :columns="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'parentId', label: '上级分类', lookup: partCategorySource }, { prop: 'sort', label: '排序', width: 80 }, { prop: 'status', label: '状态', width: 80 }]" :form-fields="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'parentId', label: '上级分类', type: 'select', source: partCategorySource }, { prop: 'sort', label: '排序', type: 'number' }, { prop: 'status', label: '启用', type: 'switch' }]" />
+        <crud-table url="/admin/part-category" title="分类" :columns="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'parentId', label: '上级分类', lookup: partCategorySource }, { prop: 'sort', label: '排序', width: 80 }, { prop: 'status', label: '状态', dict: 'enable_status', width: 80, tag: true }]" :form-fields="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'parentId', label: '上级分类', type: 'select', source: partCategorySource }, { prop: 'sort', label: '排序', type: 'number' }, { prop: 'status', label: '启用', type: 'switch', dict: 'enable_status' }]" />
       </el-tab-pane>
       <el-tab-pane label="供应商" name="supplier">
-        <crud-table url="/admin/part-supplier" title="供应商" :columns="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '绑定登录账号', lookup: userSource, width: 130 }, { prop: 'status', label: '状态', width: 80 }]" :form-fields="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '绑定登录账号', type: 'select', source: userSource }, { prop: 'address', label: '地址', span: 24 }, { prop: 'remark', label: '备注', span: 24 }, { prop: 'status', label: '启用', type: 'switch' }]" />
+        <crud-table url="/admin/part-supplier" title="供应商" :columns="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '绑定登录账号', lookup: userSource, width: 130 }, { prop: 'status', label: '状态', dict: 'enable_status', width: 80, tag: true }]" :form-fields="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '绑定登录账号', type: 'select', source: userSource }, { prop: 'address', label: '地址', span: 24 }, { prop: 'remark', label: '备注', span: 24 }, { prop: 'status', label: '启用', type: 'switch', dict: 'enable_status' }]" />
       </el-tab-pane>
       <el-tab-pane label="供应商送货单" name="delivery">
         <crud-table
@@ -28,7 +28,7 @@
           :can-add="false"
           :columns="deliveryColumns"
           :form-fields="deliveryForm"
-          :search-fields="[{ prop: 'deliveryNoLike', label: '送货单号' }, { prop: 'supplierNameLike', label: '供应商' }, { prop: 'storeId', label: '收货门店', lookup: storeSource }, { prop: 'status', label: '状态', options: ['待确认', '已入库', '已拒绝'].map((v) => ({ label: v, value: v })) }]"
+          :search-fields="[{ prop: 'deliveryNoLike', label: '送货单号' }, { prop: 'supplierNameLike', label: '供应商' }, { prop: 'storeId', label: '收货门店', lookup: storeSource }, { prop: 'status', label: '状态', dict: 'delivery_status' }]"
         >
           <template #row-actions="{ row }">
             <el-button v-if="row.status === '待确认'" link type="success" @click="confirmDelivery(row, true)">确认入库</el-button>
@@ -113,7 +113,7 @@ const columns = [
   { prop: 'stock', label: '库存', width: 80 },
   { prop: 'warnStock', label: '预警', width: 70 },
   { prop: 'unit', label: '单位', width: 60 },
-  { prop: 'status', label: '状态', width: 70 }
+  { prop: 'status', label: '状态', dict: 'enable_status', width: 70, tag: true }
 ]
 const formFields = [
   { prop: 'partName', label: '配件名称' },
@@ -128,7 +128,7 @@ const formFields = [
   { prop: 'warnStock', label: '预警库存', type: 'number' },
   { prop: 'supplier', label: '供应商' },
   { prop: 'cover', label: '图片', type: 'image', span: 24 },
-  { prop: 'status', label: '启用', type: 'switch' }
+  { prop: 'status', label: '启用', type: 'switch', dict: 'enable_status' }
 ]
 const searchFields = [
   { prop: 'partNameLike', label: '配件名称' },
@@ -169,12 +169,12 @@ const deliveryColumns = [
   { prop: 'totalAmount', label: '金额', width: 110, money: true },
   { prop: 'expectDate', label: '预计到货', width: 120 },
   { prop: 'submitTime', label: '提交时间', width: 170 },
-  { prop: 'status', label: '状态', width: 100, tag: true }
+  { prop: 'status', label: '状态', dict: 'delivery_status', width: 100, tag: true }
 ]
 const deliveryForm = [
   { prop: 'storeId', label: '收货门店', type: 'select', source: storeSource },
   { prop: 'expectDate', label: '预计到货日期', type: 'date' },
-  { prop: 'status', label: '状态', type: 'select', options: ['待确认', '已入库', '已拒绝'].map((v) => ({ label: v, value: v })) },
+  { prop: 'status', label: '状态', type: 'select', dict: 'delivery_status' },
   { prop: 'confirmRemark', label: '确认备注', type: 'textarea', span: 24 },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
 ]

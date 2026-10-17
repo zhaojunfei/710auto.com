@@ -35,7 +35,7 @@ const columns = [
   { prop: 'requestUrl', label: '地址', minWidth: 220 },
   { prop: 'ip', label: 'IP', width: 130 },
   { prop: 'costTime', label: '耗时(ms)', width: 90 },
-  { prop: 'status', label: '状态', width: 70 },
+  { prop: 'status', label: '状态', dict: 'exec_status', width: 70, tag: true },
   { prop: 'createTime', label: '时间', width: 170 }
 ]
 const searchFields = [

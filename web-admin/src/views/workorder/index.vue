@@ -100,7 +100,7 @@
     <el-dialog v-model="manualVisible" title="手动录入线下工单" width="640px">
       <el-form :model="manualForm" label-width="100px">
         <el-row :gutter="16">
-          <el-col :span="12"><el-form-item label="车牌号"><el-input v-model="manualForm.plateNo" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="车牌号"><plate-input ref="manualPlateRef" v-model="manualForm.plateNo" required /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="品牌车型"><el-input v-model="manualForm.brandModel" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="联系人"><el-input v-model="manualForm.contactName" /></el-form-item></el-col>
           <el-col :span="12">
@@ -270,9 +270,11 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { appointmentApi, crud, memberLookupApi, refundApi, workOrderApi } from '@/api'
 import CrudTable from '@/components/CrudTable.vue'
+import PlateInput from '@/components/PlateInput.vue'
 
 const tab = ref('kanban')
-const columns = ['待接车', '待派工', '施工中', '待质检', '待结算', '已离店', '已评价']
+/** 工单看板列（来自数据字典 work_order_status，维护字典即生效；兜底内置顺序） */
+const columns = ref<string[]>(['待接车', '待派工', '施工中', '待质检', '待结算', '已离店', '已评价'])
 const board = ref<any>({})
 const loading = ref(false)
 
@@ -301,6 +303,7 @@ const capacityForm = reactive<any>({ storeId: undefined, date: '' })
 /* ---------- 手机号即会员 ---------- */
 const manualMember = ref<any>(null)
 const memberTip = ref('')
+const manualPlateRef = ref<any>()
 
 /* ---------- 字典下拉（统一由数据字典维护） ---------- */
 const payTypes = ref<any[]>([])
@@ -362,6 +365,7 @@ async function toggleUrgent() {
   afterAction('已更新')
 }
 async function submitManual() {
+  if (!manualPlateRef.value?.validate()) return
   if (manualForm.contactPhone) {
     // 提交前确保会员已建档（手机号即会员）
     await memberLookupApi.ensure({ phone: manualForm.contactPhone, realName: manualForm.contactName })
@@ -402,15 +406,15 @@ const apptColumns = [
   { prop: 'contactPhone', label: '电话', width: 130 },
   { prop: 'appointTime', label: '到店时间', width: 170 },
   { prop: 'source', label: '来源', width: 90 },
-  { prop: 'status', label: '状态', width: 100, tag: true }
+  { prop: 'status', label: '状态', dict: 'appointment_status', width: 100, tag: true }
 ]
 const apptForm = [
-  { prop: 'plateNo', label: '车牌号' },
+  { prop: 'plateNo', label: '车牌号', type: 'plate', required: true },
   { prop: 'brandModel', label: '品牌车型' },
   { prop: 'itemName', label: '服务项目' },
   { prop: 'contactName', label: '联系人' },
   { prop: 'contactPhone', label: '联系电话' },
-  { prop: 'appointTime', label: '预约到店时间(yyyy-MM-dd HH:mm:ss)', span: 24 },
+  { prop: 'appointTime', label: '预约到店时间', span: 24 },
   { prop: 'remark', label: '客户备注', type: 'textarea', span: 24 },
   { prop: 'status', label: '状态', type: 'select', dict: 'appointment_status' }
 ]
@@ -456,9 +460,9 @@ const evalColumns = [
   { prop: 'techScore', label: '技师', width: 70 },
   { prop: 'content', label: '评价内容', minWidth: 220 },
   { prop: 'reply', label: '门店回复', minWidth: 180 },
-  { prop: 'status', label: '显示', width: 80, tag: true }
+  { prop: 'status', label: '显示', dict: 'show_status', width: 80, tag: true }
 ]
-const evalForm = [{ prop: 'reply', label: '门店回复', type: 'textarea', span: 24 }, { prop: 'status', label: '显示', type: 'switch' }]
+const evalForm = [{ prop: 'reply', label: '门店回复', type: 'textarea', span: 24 }, { prop: 'status', label: '显示', type: 'switch', dict: 'show_status' }]
 
 /* ---------- 派工记录 ---------- */
 const dispatchColumns = [
@@ -466,7 +470,7 @@ const dispatchColumns = [
   { prop: 'technicianName', label: '技师', width: 120 },
   { prop: 'dispatchType', label: '类型', width: 100 },
   { prop: 'dispatchTime', label: '操作时间', width: 170 },
-  { prop: 'status', label: '状态', width: 100 },
+  { prop: 'status', label: '状态', dict: 'dispatch_status', width: 100, tag: true },
   { prop: 'remark', label: '备注', minWidth: 160 }
 ]
 
@@ -476,7 +480,7 @@ const refundColumns = [
   { prop: 'orderNo', label: '原订单号', width: 150 },
   { prop: 'refundAmount', label: '退款金额', width: 110, money: true },
   { prop: 'reason', label: '原因', minWidth: 160 },
-  { prop: 'status', label: '状态', width: 100 },
+  { prop: 'status', label: '状态', dict: 'refund_status', width: 100, tag: true },
   { prop: 'auditTime', label: '审核时间', width: 170 },
   { prop: 'auditRemark', label: '审核备注', minWidth: 140 }
 ]
@@ -498,6 +502,8 @@ onMounted(async () => {
   stores.value = await crud.list('/admin/store-info')
   payTypes.value = await dictOptions('pay_type')
   checkItems.value = await dictOptions('check_item')
+  const ws = await dictOptions('work_order_status')
+  if (ws.length) columns.value = ws.map((o: any) => o.value)
 })
 
 /** 读取数据字典（下拉统一字典化，维护后刷新页面即生效） */

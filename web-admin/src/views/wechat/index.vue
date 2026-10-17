@@ -45,7 +45,7 @@ async function loadMenuJson() {
   menuJson.value = await request.get('/admin/wechat/menu-json')
 }
 
-const replyColumns = [{ prop: 'ruleType', label: '类型', width: 90 }, { prop: 'keyword', label: '关键词', width: 120 }, { prop: 'matchType', label: '匹配', width: 90 }, { prop: 'content', label: '回复内容', minWidth: 220 }, { prop: 'status', label: '状态', width: 70 }]
+const replyColumns = [{ prop: 'ruleType', label: '类型', width: 90 }, { prop: 'keyword', label: '关键词', width: 120 }, { prop: 'matchType', label: '匹配', width: 90 }, { prop: 'content', label: '回复内容', minWidth: 220 }, { prop: 'status', label: '状态', dict: 'enable_status', width: 70, tag: true }]
 const replyForm = [
   { prop: 'ruleType', label: '类型', type: 'select', options: ['关注', '关键词', '默认'].map((v) => ({ label: v, value: v })) },
   { prop: 'keyword', label: '关键词' },
@@ -53,20 +53,20 @@ const replyForm = [
   { prop: 'replyType', label: '回复类型', type: 'select', options: ['文本', '图文', '图片'].map((v) => ({ label: v, value: v })) },
   { prop: 'content', label: '回复内容', type: 'textarea', span: 24 },
   { prop: 'sort', label: '排序', type: 'number' },
-  { prop: 'status', label: '启用', type: 'switch' }
+  { prop: 'status', label: '启用', type: 'switch', dict: 'enable_status' }
 ]
 
-const tplColumns = [{ prop: 'msgType', label: '消息类型', width: 140 }, { prop: 'templateId', label: '模板ID', minWidth: 180 }, { prop: 'status', label: '状态', width: 70 }]
+const tplColumns = [{ prop: 'msgType', label: '消息类型', width: 140 }, { prop: 'templateId', label: '模板ID', minWidth: 180 }, { prop: 'status', label: '状态', dict: 'enable_status', width: 70, tag: true }]
 const tplForm = [
   { prop: 'msgType', label: '消息类型', type: 'select', options: ['预约确认', '接车', '施工进度', '完工待取车', '结算完成', '存胎到期提醒', '退款'].map((v) => ({ label: v, value: v })) },
   { prop: 'templateId', label: '微信模板ID' },
   { prop: 'title', label: '模板标题' },
   { prop: 'contentTemplate', label: '内容模板', type: 'textarea', span: 24 },
-  { prop: 'status', label: '启用', type: 'switch' }
+  { prop: 'status', label: '启用', type: 'switch', dict: 'enable_status' }
 ]
 
 const fansColumns = [{ prop: 'nickname', label: '昵称' }, { prop: 'openid', label: 'OpenID', minWidth: 200 }, { prop: 'subscribe', label: '关注', width: 70 }, { prop: 'subscribeTime', label: '关注时间', width: 170 }]
 
-const materialColumns = [{ prop: 'materialType', label: '类型', width: 90 }, { prop: 'title', label: '标题', minWidth: 180 }, { prop: 'mediaId', label: '媒体ID', minWidth: 160 }, { prop: 'status', label: '状态', width: 70 }]
-const materialForm = [{ prop: 'materialType', label: '类型', type: 'select', options: ['图文', '图片', '视频'].map((v) => ({ label: v, value: v })) }, { prop: 'title', label: '标题' }, { prop: 'mediaId', label: '微信媒体ID' }, { prop: 'thumbUrl', label: '缩略图', type: 'image', span: 24 }, { prop: 'content', label: '图文内容', type: 'richtext', span: 24 }, { prop: 'status', label: '有效', type: 'switch' }]
+const materialColumns = [{ prop: 'materialType', label: '类型', width: 90 }, { prop: 'title', label: '标题', minWidth: 180 }, { prop: 'mediaId', label: '媒体ID', minWidth: 160 }, { prop: 'status', label: '状态', dict: 'enable_status', width: 70, tag: true }]
+const materialForm = [{ prop: 'materialType', label: '类型', type: 'select', options: ['图文', '图片', '视频'].map((v) => ({ label: v, value: v })) }, { prop: 'title', label: '标题' }, { prop: 'mediaId', label: '微信媒体ID' }, { prop: 'thumbUrl', label: '缩略图', type: 'image', span: 24 }, { prop: 'content', label: '图文内容', type: 'richtext', span: 24 }, { prop: 'status', label: '有效', type: 'switch', dict: 'enable_status' }]
 </script>

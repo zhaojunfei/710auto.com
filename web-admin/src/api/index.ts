@@ -95,3 +95,9 @@ export const memberLookupApi = {
   find: (phone: string) => request.get('/admin/member-lookup/find', { params: { phone } }),
   ensure: (data: { phone: string; realName?: string }) => request.post('/admin/member-lookup/ensure', data)
 }
+
+/** 后台会员充值（#10） */
+export const memberRechargeApi = {
+  recharge: (params: { memberId?: number; phone?: string; amount: number; payType?: string; ruleId?: number; remark?: string }) =>
+    request.post('/admin/member-recharge/recharge', null, { params })
+}

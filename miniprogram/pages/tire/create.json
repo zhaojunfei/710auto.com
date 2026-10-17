@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "在线存胎"
+  "navigationBarTitleText": "在线存胎",
+  "usingComponents": {
+    "plate-input": "/components/plate-input/index"
+  }
 }

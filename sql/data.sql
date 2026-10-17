@@ -471,6 +471,115 @@ INSERT INTO `sys_dict_data` (dict_type, dict_label, dict_value, dict_sort, css_c
 ('tire_position', '右前', '右前', 2, NULL, 1, NULL, NOW(), NOW(), 0),
 ('tire_position', '左后', '左后', 3, NULL, 1, NULL, NOW(), NOW(), 0),
 ('tire_position', '右后', '右后', 4, NULL, 1, NULL, NOW(), NOW(), 0),
-('tire_position', '备胎', '备胎', 5, NULL, 1, NULL, NOW(), NOW(), 0),
-('stock_status', '在库', '在库', 1, NULL, 1, NULL, NOW(), NOW(), 0),
-('stock_status', '已出库', '已出库', 2, NULL, 1, NULL, NOW(), NOW(), 0);
+('tire_position', '备胎', '备胎', 5, NULL, 1, NULL, NOW(), NOW(), 0);
+
+-- ============================================================
+--  #8 状态字段字典化：编码 + 业务名称 + 标签颜色
+--  0/1 仅作存储值，界面一律显示业务名称（dictLabel），标签颜色取自 css_class
+--  按 dict_type 先删后插，幂等可重复执行
+-- ============================================================
+DELETE FROM `sys_dict_data` WHERE `dict_type` IN (
+  'enable_status','technician_status','member_status','shelf_status','publish_status',
+  'yes_no','exec_status','delivery_status','show_status',
+  'work_order_status','appointment_status','tire_storage_status','stock_status',
+  'refund_status','member_coupon_status','pay_type');
+DELETE FROM `sys_dict_type` WHERE `dict_type` IN (
+  'enable_status','technician_status','member_status','shelf_status','publish_status',
+  'yes_no','exec_status','delivery_status','show_status');
+
+INSERT INTO `sys_dict_type` (dict_type, dict_name, status, remark, create_time, update_time, deleted) VALUES
+('enable_status', '启用状态', 1, '通用启停 1启用/0停用', NOW(), NOW(), 0),
+('technician_status', '技师在职状态', 1, '技师 1在职/0离职', NOW(), NOW(), 0),
+('member_status', '会员状态', 1, '会员 1正常/0禁用', NOW(), NOW(), 0),
+('shelf_status', '上下架状态', 1, '服务/商品 1上架/0下架', NOW(), NOW(), 0),
+('publish_status', '发布状态', 1, '内容 1已发布/0草稿', NOW(), NOW(), 0),
+('yes_no', '是否', 1, '布尔型字段 1是/0否', NOW(), NOW(), 0),
+('exec_status', '执行结果', 1, '审计/任务 1成功/0失败', NOW(), NOW(), 0),
+('delivery_status', '送货单状态', 1, '供应商送货单状态', NOW(), NOW(), 0),
+('show_status', '显示状态', 1, '评价等 1显示/0隐藏', NOW(), NOW(), 0);
+
+INSERT INTO `sys_dict_data` (dict_type, dict_label, dict_value, dict_sort, css_class, status, remark, create_time, update_time, deleted) VALUES
+-- 通用启停
+('enable_status', '停用', '0', 1, 'info', 1, NULL, NOW(), NOW(), 0),
+('enable_status', '启用', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 技师在职
+('technician_status', '离职', '0', 1, 'info', 1, NULL, NOW(), NOW(), 0),
+('technician_status', '在职', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 会员状态
+('member_status', '禁用', '0', 1, 'danger', 1, NULL, NOW(), NOW(), 0),
+('member_status', '正常', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 上下架
+('shelf_status', '下架', '0', 1, 'info', 1, NULL, NOW(), NOW(), 0),
+('shelf_status', '上架', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 发布状态
+('publish_status', '草稿', '0', 1, 'info', 1, NULL, NOW(), NOW(), 0),
+('publish_status', '已发布', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 是否
+('yes_no', '否', '0', 1, 'info', 1, NULL, NOW(), NOW(), 0),
+('yes_no', '是', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 执行结果
+('exec_status', '失败', '0', 1, 'danger', 1, NULL, NOW(), NOW(), 0),
+('exec_status', '成功', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 送货单状态
+('delivery_status', '待确认', '待确认', 1, 'warning', 1, NULL, NOW(), NOW(), 0),
+('delivery_status', '已入库', '已入库', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+('delivery_status', '已拒绝', '已拒绝', 3, 'danger', 1, NULL, NOW(), NOW(), 0),
+-- 显示状态
+('show_status', '隐藏', '0', 1, 'info', 1, NULL, NOW(), NOW(), 0),
+('show_status', '显示', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 工单状态（补标签颜色）
+('work_order_status', '待接车', '待接车', 1, 'info', 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '待派工', '待派工', 2, 'warning', 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '施工中', '施工中', 3, 'primary', 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '待质检', '待质检', 4, 'warning', 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '待结算', '待结算', 5, 'danger', 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '已离店', '已离店', 6, 'success', 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '已评价', '已评价', 7, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 预约状态（补标签颜色）
+('appointment_status', '待确认', '待确认', 1, 'warning', 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '已确认', '已确认', 2, 'primary', 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '待接车', '待接车', 3, 'info', 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '已完成', '已完成', 4, 'success', 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '已取消', '已取消', 5, 'info', 1, NULL, NOW(), NOW(), 0),
+-- 存胎状态（补标签颜色）
+('tire_storage_status', '已寄存', '已寄存', 1, 'primary', 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '寄存中', '寄存中', 2, 'info', 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '待取胎', '待取胎', 3, 'warning', 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '已取胎', '已取胎', 4, 'success', 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '超期', '超期', 5, 'danger', 1, NULL, NOW(), NOW(), 0),
+-- 库存状态（补标签颜色）
+('stock_status', '在库', '在库', 1, 'success', 1, NULL, NOW(), NOW(), 0),
+('stock_status', '已出库', '已出库', 2, 'info', 1, NULL, NOW(), NOW(), 0),
+-- 退款状态（补标签颜色）
+('refund_status', '待审核', '待审核', 1, 'warning', 1, NULL, NOW(), NOW(), 0),
+('refund_status', '已通过', '已通过', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+('refund_status', '已拒绝', '已拒绝', 3, 'danger', 1, NULL, NOW(), NOW(), 0),
+('refund_status', '已退款', '已退款', 4, 'success', 1, NULL, NOW(), NOW(), 0),
+-- 会员券状态（补标签颜色）
+('member_coupon_status', '未使用', '未使用', 1, 'success', 1, NULL, NOW(), NOW(), 0),
+('member_coupon_status', '已使用', '已使用', 2, 'info', 1, NULL, NOW(), NOW(), 0),
+('member_coupon_status', '已过期', '已过期', 3, 'danger', 1, NULL, NOW(), NOW(), 0),
+-- 结算/充值方式（#10 补充 支付宝 / 记账）
+('pay_type', '现金', '现金', 1, 'primary', 1, '线下现金', NOW(), NOW(), 0),
+('pay_type', '微信', '微信', 2, 'success', 1, '微信支付', NOW(), NOW(), 0),
+('pay_type', '支付宝', '支付宝', 3, 'primary', 1, '支付宝', NOW(), NOW(), 0),
+('pay_type', '储值', '储值', 4, 'warning', 1, '会员储值余额', NOW(), NOW(), 0),
+('pay_type', '记账', '记账', 5, 'info', 1, '挂账/月结', NOW(), NOW(), 0),
+('pay_type', '混合', '混合', 6, 'info', 1, '多种方式组合', NOW(), NOW(), 0);
+
+-- ============================================================
+--  #8 补充字典：留言处理状态 / 派工记录状态
+-- ============================================================
+DELETE FROM `sys_dict_data` WHERE `dict_type` IN ('handle_status','dispatch_status');
+DELETE FROM `sys_dict_type` WHERE `dict_type` IN ('handle_status','dispatch_status');
+
+INSERT INTO `sys_dict_type` (dict_type, dict_name, status, remark, create_time, update_time, deleted) VALUES
+('handle_status', '留言处理状态', 1, '客户留言 1已处理/0未处理', NOW(), NOW(), 0),
+('dispatch_status', '派工状态', 1, '派工记录状态', NOW(), NOW(), 0);
+
+INSERT INTO `sys_dict_data` (dict_type, dict_label, dict_value, dict_sort, css_class, status, remark, create_time, update_time, deleted) VALUES
+('handle_status', '未处理', '0', 1, 'warning', 1, NULL, NOW(), NOW(), 0),
+('handle_status', '已处理', '1', 2, 'success', 1, NULL, NOW(), NOW(), 0),
+('dispatch_status', '已派工', '已派工', 1, 'primary', 1, NULL, NOW(), NOW(), 0),
+('dispatch_status', '已接单', '已接单', 2, 'warning', 1, NULL, NOW(), NOW(), 0),
+('dispatch_status', '已完工', '已完工', 3, 'success', 1, NULL, NOW(), NOW(), 0);

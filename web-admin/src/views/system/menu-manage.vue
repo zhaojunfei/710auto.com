@@ -40,11 +40,11 @@
         <el-table-column prop="icon" label="图标" width="130" show-overflow-tooltip />
         <el-table-column prop="sort" label="排序" width="70" />
         <el-table-column label="显示" width="70">
-          <template #default="{ row }">{{ row.visible === 1 ? '是' : '否' }}</template>
+          <template #default="{ row }">{{ dictLabel('yes_no', row.visible) }}</template>
         </el-table-column>
         <el-table-column label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">{{ row.status === 1 ? '启用' : '停用' }}</el-tag>
+            <el-tag :type="dictClass('enable_status', row.status)" size="small">{{ dictLabel('enable_status', row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="210" fixed="right">
@@ -106,10 +106,29 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/api/request'
+import { crud } from '@/api'
 import { hasPerm } from '@/utils/perm'
 
 const MANAGE_PERM = 'system:menu:manage'
 const canManage = computed(() => hasPerm(MANAGE_PERM))
+
+/* 状态名称与标签颜色统一来自数据字典（#8） */
+const dicts = ref<Record<string, any[]>>({})
+async function loadDict(type: string) {
+  const rows: any = await crud.list('/admin/sys-dict-data', { dictType: type, size: 500 })
+  const arr: any[] = Array.isArray(rows) ? rows : rows?.records || []
+  dicts.value[type] = arr
+    .filter((r) => r.status === undefined || r.status === 1)
+    .sort((a, b) => (a.dictSort ?? 0) - (b.dictSort ?? 0))
+}
+function dictLabel(type: string, v: any) {
+  const hit = (dicts.value[type] || []).find((d) => String(d.dictValue) === String(v))
+  return hit ? hit.dictLabel : v
+}
+function dictClass(type: string, v: any) {
+  const hit = (dicts.value[type] || []).find((d) => String(d.dictValue) === String(v))
+  return (hit && hit.cssClass) || 'info'
+}
 
 const tree = ref<any[]>([])
 const keyword = ref('')
@@ -198,5 +217,9 @@ async function remove(row: any) {
   await load()
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadDict('enable_status')
+  loadDict('yes_no')
+})
 </script>

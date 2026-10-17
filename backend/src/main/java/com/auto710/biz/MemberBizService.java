@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.auto710.common.context.LoginUser;
 import com.auto710.common.exception.BusinessException;
+import com.auto710.common.util.DesensitizeUtil;
 import com.auto710.common.util.EncryptUtil;
 import com.auto710.common.util.JwtUtil;
 import com.auto710.dto.WxLoginRequest;
@@ -271,6 +272,92 @@ public class MemberBizService {
             pointsLogService.save(pointsLog);
         }
         return member;
+    }
+
+    /**
+     * 后台会员充值（#10）：按手机号/会员ID 定位会员 → 自动套用充赠规则 → 写充值/赠送流水与审计留痕。
+     * 余额直接落库，小程序 / H5 读取同一 member 记录，天然跨端同步。
+     *
+     * @param memberId 会员ID（与 phone 二选一）
+     * @param phone    手机号（与 memberId 二选一）
+     * @param amount   充值金额
+     * @param payType  充值方式（现金 / 微信 / 支付宝 / 记账 …，来自数据字典 pay_type）
+     * @param ruleId   充赠规则ID（可空：按金额自动匹配最优规则）
+     * @param remark   备注
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, Object> rechargeByAdmin(Long memberId, String phone, BigDecimal amount,
+                                               String payType, Long ruleId, String remark) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("充值金额不正确");
+        }
+        Member member = null;
+        if (memberId != null) {
+            member = memberService.getById(memberId);
+        } else if (StrUtil.isNotBlank(phone)) {
+            String plain = phone.trim();
+            String enc = EncryptUtil.isEncrypted(plain) ? plain : EncryptUtil.encrypt(plain);
+            member = memberService.getOne(new LambdaQueryWrapper<Member>()
+                    .eq(Member::getPhone, enc).last("limit 1"));
+        }
+        if (member == null) {
+            throw new BusinessException("该手机号暂无会员，请先在「会员管理」建档后充值");
+        }
+        if (member.getStatus() != null && member.getStatus() == 0) {
+            throw new BusinessException("会员已被禁用，无法充值");
+        }
+
+        RechargeRule rule;
+        if (ruleId != null) {
+            rule = rechargeRuleService.getById(ruleId);
+        } else {
+            // 自动匹配：启用中、充值门槛 ≤ 本次金额、门槛最高的一条
+            rule = rechargeRuleService.getOne(new LambdaQueryWrapper<RechargeRule>()
+                    .eq(RechargeRule::getStatus, 1)
+                    .le(RechargeRule::getRechargeAmount, amount)
+                    .orderByDesc(RechargeRule::getRechargeAmount)
+                    .last("limit 1"));
+        }
+        BigDecimal gift = (rule != null && rule.getGiftAmount() != null) ? rule.getGiftAmount() : BigDecimal.ZERO;
+        int giftPoints = (rule != null && rule.getGiftPoints() != null) ? rule.getGiftPoints() : 0;
+
+        BigDecimal total = amount.add(gift);
+        BigDecimal balance = (member.getBalance() == null ? BigDecimal.ZERO : member.getBalance()).add(total);
+        member.setBalance(balance);
+        member.setPoints((member.getPoints() == null ? 0 : member.getPoints()) + giftPoints);
+        memberService.updateById(member);
+
+        String way = StrUtil.blankToDefault(payType, "现金");
+        String base = "后台充值（" + way + "）" + (StrUtil.isNotBlank(remark) ? "：" + remark : "");
+        saveBalanceLog(member.getId(), amount, balance, "充值", null, base);
+        if (gift.compareTo(BigDecimal.ZERO) > 0) {
+            saveBalanceLog(member.getId(), gift, balance, "赠送", null,
+                    "充值赠送" + (rule != null ? "（" + rule.getRuleName() + "）" : ""));
+        }
+        if (giftPoints > 0) {
+            MemberPointsLog pointsLog = new MemberPointsLog();
+            pointsLog.setMemberId(member.getId());
+            pointsLog.setChangePoints(giftPoints);
+            pointsLog.setBalancePoints(member.getPoints());
+            pointsLog.setType("获取");
+            pointsLog.setSource("后台充值赠送积分");
+            pointsLogService.save(pointsLog);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("memberId", member.getId());
+        result.put("realName", member.getRealName());
+        result.put("nickname", member.getNickname());
+        result.put("phone", DesensitizeUtil.phone(member.getPhone()));
+        result.put("amount", amount);
+        result.put("giftAmount", gift);
+        result.put("giftPoints", giftPoints);
+        result.put("rechargeRuleId", rule == null ? null : rule.getId());
+        result.put("rechargeRuleName", rule == null ? null : rule.getRuleName());
+        result.put("payType", way);
+        result.put("balance", member.getBalance());
+        result.put("points", member.getPoints());
+        return result;
     }
 
     private void clearDefaultVehicle(Long memberId) {

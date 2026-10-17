@@ -93,7 +93,7 @@ const userColumns = [
   { prop: 'phone', label: '手机号', width: 140 },
   { prop: 'email', label: '邮箱', minWidth: 160 },
   { prop: 'storeId', label: '所属门店', lookup: storeSource, width: 140 },
-  { prop: 'status', label: '状态', width: 80, tag: true },
+  { prop: 'status', label: '状态', dict: 'enable_status', width: 80, tag: true },
   { prop: 'lastLoginTime', label: '最后登录', width: 170 },
   { prop: 'createTime', label: '创建时间', width: 170 }
 ]
@@ -105,7 +105,7 @@ const userFormFields = [
   { prop: 'email', label: '邮箱' },
   { prop: 'storeId', label: '所属门店', type: 'select', source: storeSource },
   { prop: 'avatar', label: '头像', type: 'image', span: 24, dir: 'avatar' },
-  { prop: 'status', label: '状态', type: 'switch' },
+  { prop: 'status', label: '状态', type: 'switch', dict: 'enable_status' },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
 ]
 const userSearchFields = [
@@ -157,7 +157,7 @@ const roleColumns = [
   { prop: 'roleCode', label: '角色编码', width: 160 },
   { prop: 'dataScope', label: '数据范围', width: 100 },
   { prop: 'sort', label: '排序', width: 80 },
-  { prop: 'status', label: '状态', width: 80, tag: true },
+  { prop: 'status', label: '状态', dict: 'enable_status', width: 80, tag: true },
   { prop: 'remark', label: '备注', minWidth: 160 }
 ]
 const roleFormFields = [
@@ -167,7 +167,7 @@ const roleFormFields = [
     { label: '全部数据', value: 1 }, { label: '本店数据', value: 2 }, { label: '仅本人', value: 3 }
   ] },
   { prop: 'sort', label: '排序', type: 'number' },
-  { prop: 'status', label: '状态', type: 'switch' },
+  { prop: 'status', label: '状态', type: 'switch', dict: 'enable_status' },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
 ]
 

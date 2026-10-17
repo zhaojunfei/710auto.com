@@ -23,7 +23,7 @@
             style="width: 260px"
           />
           <el-select
-            v-else-if="f.options || f.source || f.lookup || f.dict"
+            v-else-if="f.options || f.source || f.lookup || dictOf(f)"
             v-model="query[f.prop]"
             :placeholder="'请选择' + f.label"
             clearable
@@ -56,7 +56,7 @@
         <el-table-column type="selection" width="46" v-if="canDelete" />
         <el-table-column v-for="c in columns" :key="c.prop" :prop="c.prop" :label="c.label" :width="c.width" :min-width="c.minWidth || 120" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-tag v-if="c.tag" :type="tagType(row[c.prop])">{{ displayValue(row, c) }}</el-tag>
+            <el-tag v-if="c.tag" :type="tagClassOf(c, row[c.prop])" :effect="c.effect || 'light'">{{ displayValue(row, c) }}</el-tag>
             <el-image v-else-if="c.image" :src="row[c.prop]" style="width: 42px; height: 42px; border-radius: 4px" fit="cover" :preview-src-list="row[c.prop] ? [row[c.prop]] : []" />
             <span v-else>{{ displayValue(row, c) }}</span>
           </template>
@@ -118,8 +118,17 @@
               <el-select v-else-if="f.type === 'select'" v-model="form[f.prop]" :placeholder="'请选择' + f.label" clearable :multiple="!!f.multiple" style="width: 100%">
                 <el-option v-for="o in optionsOf(f)" :key="o.value" :label="o.label" :value="o.value" />
               </el-select>
-              <el-switch v-else-if="f.type === 'switch'" v-model="form[f.prop]" :active-value="1" :inactive-value="0" />
+              <el-switch
+                v-else-if="f.type === 'switch'"
+                v-model="form[f.prop]"
+                :active-value="f.activeValue ?? 1"
+                :inactive-value="f.inactiveValue ?? 0"
+                :active-text="switchText(f, f.activeValue ?? 1)"
+                :inactive-text="switchText(f, f.inactiveValue ?? 0)"
+                :inline-prompt="!!dictOf(f)"
+              />
               <image-upload v-else-if="f.type === 'image'" v-model="form[f.prop]" :dir="f.dir || 'images'" :multiple="!!f.multiple" />
+              <plate-input v-else-if="f.type === 'plate'" v-model="form[f.prop]" :required="!!f.required" />
               <rich-editor v-else-if="f.type === 'richtext'" v-model="form[f.prop]" />
               <div v-if="f.tip" class="field-tip">{{ f.tip }}</div>
             </el-form-item>
@@ -141,6 +150,7 @@ import { crud } from '@/api'
 import { hasPerm } from '@/utils/perm'
 import ImageUpload from './ImageUpload.vue'
 import RichEditor from './RichEditor.vue'
+import PlateInput from './PlateInput.vue'
 
 // 注意：Vue 会把「未显式传入」的 Boolean 类型 prop 强制转换为 false，
 // 因此这里必须用 withDefaults 指定默认为 true，否则任何没写 :can-add="true"
@@ -211,10 +221,41 @@ function srcKey(s: any) {
 function optionsOf(f: any): any[] {
   if (!f) return []
   if (f.options) return f.options
-  if (f.dict) return sourceCache[dictKey(f.dict)] || []
+  const dt = dictOf(f)
+  if (dt) return sourceCache[dictKey(dt)] || []
   const src = f.source || f.lookup
   if (src) return sourceCache[srcKey(src)] || []
   return []
+}
+
+/**
+ * 字段字典类型：显式 f.dict 优先；裸 status 字段兜底走通用启停字典，
+ * 保证「全系统无裸 0/1」——即使页面漏配 dict，也不会显示 0/1。
+ */
+function dictOf(f: any): string | undefined {
+  if (!f) return undefined
+  if (f.dict) return f.dict
+  if ((f.prop === 'status' || f.prop === 'enabled') && !f.options && !f.source && !f.lookup) return 'enable_status'
+  return undefined
+}
+
+/** 匹配字段当前值对应的选项（含 cssClass 标签颜色） */
+function optionOf(f: any, v: any): any {
+  if (!f) return undefined
+  return optionsOf(f).find((o: any) => String(o.value) === String(v))
+}
+
+/** 标签颜色：优先取字典 css_class，其次回退内置状态色 */
+function tagClassOf(c: any, v: any) {
+  const hit = optionOf(c, v)
+  if (hit && hit.cssClass) return hit.cssClass
+  return tagType(v)
+}
+
+/** 开关文案：来自字典业务名称 */
+function switchText(f: any, v: any) {
+  const hit = optionOf(f, v)
+  return hit ? hit.label : ''
 }
 
 /** 加载数据字典（实时生效：字典维护后调用 reloadOptions 即刷新） */
@@ -225,7 +266,7 @@ async function ensureDict(type: string) {
   arr.sort((a, b) => (a.dictSort ?? 0) - (b.dictSort ?? 0))
   sourceCache[dictKey(type)] = arr
     .filter((r) => r.status === undefined || r.status === 1)
-    .map((r) => ({ label: r.dictLabel, value: r.dictValue }))
+    .map((r) => ({ label: r.dictLabel, value: r.dictValue, cssClass: r.cssClass }))
 }
 
 /** 加载业务下拉（门店 / 技师 / 会员 等），把 ID 换成名称 */
@@ -244,7 +285,8 @@ async function preloadOptions() {
   const dicts = new Set<string>()
   const srcs: any[] = []
   fields.forEach((f: any) => {
-    if (f.dict) dicts.add(f.dict)
+    const dt = dictOf(f)
+    if (dt) dicts.add(dt)
     else if ((f.source || f.lookup) && !f.options) srcs.push(f.source || f.lookup)
   })
   await Promise.allSettled([
@@ -272,8 +314,8 @@ function format(value: any, col: any) {
 /** 列展示：lookup/dict 优先把 ID / 编码换成名称 */
 function displayValue(row: any, c: any) {
   const v = row[c.prop]
-  if (c.lookup || c.dict) {
-    const hit = optionsOf(c).find((o: any) => String(o.value) === String(v))
+  if (c.lookup || dictOf(c)) {
+    const hit = optionOf(c, v)
     if (hit) return hit.label
   }
   return format(v, c)
@@ -281,8 +323,8 @@ function displayValue(row: any, c: any) {
 /** Label 规范：日期类字段统一为「名称(yyyy-MM-dd)」 */
 function fieldLabel(f: any) {
   const label = f.label || ''
-  if (f.type === 'date' && !label.includes('(')) return label + '(yyyy-MM-dd)'
-  if (f.type === 'datetime' && !label.includes('(')) return label + '(yyyy-MM-dd HH:mm:ss)'
+  if (f.type === 'date' && !label.includes('(')) return label
+  if (f.type === 'datetime' && !label.includes('(')) return label 
   return label
 }
 /** 删除确认文案中的日期统一 (yyyy-MM-dd) */

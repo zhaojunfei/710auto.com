@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "在线预约"
+  "navigationBarTitleText": "在线预约",
+  "usingComponents": {
+    "plate-input": "/components/plate-input/index"
+  }
 }

@@ -88,7 +88,7 @@ const columns = [
 const formFields = [
   { prop: 'memberId', label: '会员', type: 'select', source: memberSource },
   { prop: 'storeId', label: '门店', type: 'select', source: storeSource },
-  { prop: 'plateNo', label: '车牌号' },
+  { prop: 'plateNo', label: '车牌号', type: 'plate', required: true },
   { prop: 'tireCount', label: '轮胎数量', type: 'number' },
   { prop: 'tireType', label: '轮胎类型', type: 'select', dict: 'tire_type' },
   { prop: 'tireBrand', label: '品牌' },
@@ -123,7 +123,7 @@ const stockForm = [
   { prop: 'storeId', label: '门店', type: 'select', source: storeSource },
   { prop: 'positionNo', label: '货位号' },
   { prop: 'storageOrderId', label: '寄存单', type: 'select', source: storageSource },
-  { prop: 'plateNo', label: '车牌号' },
+  { prop: 'plateNo', label: '车牌号', type: 'plate' },
   { prop: 'tireCount', label: '轮胎数量', type: 'number' },
   { prop: 'status', label: '状态', type: 'select', dict: 'stock_status' }
 ]

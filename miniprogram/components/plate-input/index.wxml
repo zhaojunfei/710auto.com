@@ -1,0 +1,19 @@
+<view class="plate">
+  <view class="plate-row">
+    <picker class="plate-prov" mode="selector" range="{{provinces}}" value="{{provinceIndex}}" bindchange="onProvince">
+      <view class="plate-prov-inner">{{province || '简称'}}</view>
+    </picker>
+    <input
+      class="plate-no"
+      value="{{rest}}"
+      maxlength="{{type === 'green' ? 7 : 6}}"
+      placeholder="{{type === 'green' ? '如 D123456（7位）' : '如 A12345（6位）'}}"
+      bindinput="onInput"
+    />
+  </view>
+  <view class="plate-row plate-types">
+    <view class="plate-radio {{type === 'blue' ? 'on' : ''}}" data-t="blue" bindtap="onType">蓝牌（油车）</view>
+    <view class="plate-radio {{type === 'green' ? 'on' : ''}}" data-t="green" bindtap="onType">绿牌（新能源）</view>
+  </view>
+  <view wx:if="{{error}}" class="plate-err">{{error}}</view>
+</view>

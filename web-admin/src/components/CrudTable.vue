@@ -3,11 +3,35 @@
     <!-- 筛选区（可折叠） -->
     <div class="search-area" v-if="searchFields.length">
       <el-form :inline="true" :model="query">
-        <el-form-item v-for="f in visibleSearch" :key="f.prop" :label="f.label">
-          <el-input v-if="!f.options" v-model="query[f.prop]" :placeholder="'请输入' + f.label" clearable style="width: 180px" @keyup.enter="load" />
-          <el-select v-else v-model="query[f.prop]" :placeholder="'请选择' + f.label" clearable style="width: 180px">
-            <el-option v-for="o in f.options" :key="o.value" :label="o.label" :value="o.value" />
+        <el-form-item v-for="f in visibleSearch" :key="f.prop" :label="fieldLabel(f)">
+          <el-date-picker
+            v-if="f.type === 'date'"
+            v-model="query[f.prop]"
+            type="date"
+            value-format="yyyy-MM-dd"
+            placeholder="选择日期"
+            clearable
+            style="width: 180px"
+          />
+          <el-date-picker
+            v-else-if="f.type === 'daterange'"
+            v-model="query[f.prop]"
+            type="daterange"
+            value-format="yyyy-MM-dd"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            style="width: 260px"
+          />
+          <el-select
+            v-else-if="f.options || f.source || f.lookup || f.dict"
+            v-model="query[f.prop]"
+            :placeholder="'请选择' + f.label"
+            clearable
+            style="width: 180px"
+          >
+            <el-option v-for="o in optionsOf(f)" :key="o.value" :label="o.label" :value="o.value" />
           </el-select>
+          <el-input v-else v-model="query[f.prop]" :placeholder="'请输入' + f.label" clearable style="width: 180px" @keyup.enter="load" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="load">查询</el-button>
@@ -32,9 +56,9 @@
         <el-table-column type="selection" width="46" v-if="canDelete" />
         <el-table-column v-for="c in columns" :key="c.prop" :prop="c.prop" :label="c.label" :width="c.width" :min-width="c.minWidth || 120" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-tag v-if="c.tag" :type="tagType(row[c.prop])">{{ row[c.prop] }}</el-tag>
+            <el-tag v-if="c.tag" :type="tagType(row[c.prop])">{{ displayValue(row, c) }}</el-tag>
             <el-image v-else-if="c.image" :src="row[c.prop]" style="width: 42px; height: 42px; border-radius: 4px" fit="cover" :preview-src-list="row[c.prop] ? [row[c.prop]] : []" />
-            <span v-else>{{ format(row[c.prop], c) }}</span>
+            <span v-else>{{ displayValue(row, c) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" :width="operationWidth">
@@ -68,19 +92,36 @@
 
     <!-- 表单弹窗 -->
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑' + title : '新增' + title" width="760px" destroy-on-close>
-      <el-form :model="form" label-width="120px">
+      <el-form :model="form" label-width="140px">
         <el-row :gutter="16">
           <el-col v-for="f in formFields" :key="f.prop" :span="f.span || 12">
-            <el-form-item :label="f.label">
+            <el-form-item :label="fieldLabel(f)">
               <el-input v-if="!f.type || f.type === 'input'" v-model="form[f.prop]" :placeholder="'请输入' + f.label" />
               <el-input v-else-if="f.type === 'textarea'" type="textarea" :rows="3" v-model="form[f.prop]" />
               <el-input-number v-else-if="f.type === 'number'" v-model="form[f.prop]" :min="0" style="width: 100%" />
-              <el-select v-else-if="f.type === 'select'" v-model="form[f.prop]" style="width: 100%">
-                <el-option v-for="o in f.options" :key="o.value" :label="o.label" :value="o.value" />
+              <el-date-picker
+                v-else-if="f.type === 'date'"
+                v-model="form[f.prop]"
+                type="date"
+                value-format="yyyy-MM-dd"
+                placeholder="请选择日期"
+                style="width: 100%"
+              />
+              <el-date-picker
+                v-else-if="f.type === 'datetime'"
+                v-model="form[f.prop]"
+                type="datetime"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                placeholder="请选择日期时间"
+                style="width: 100%"
+              />
+              <el-select v-else-if="f.type === 'select'" v-model="form[f.prop]" :placeholder="'请选择' + f.label" clearable :multiple="!!f.multiple" style="width: 100%">
+                <el-option v-for="o in optionsOf(f)" :key="o.value" :label="o.label" :value="o.value" />
               </el-select>
               <el-switch v-else-if="f.type === 'switch'" v-model="form[f.prop]" :active-value="1" :inactive-value="0" />
               <image-upload v-else-if="f.type === 'image'" v-model="form[f.prop]" :dir="f.dir || 'images'" :multiple="!!f.multiple" />
               <rich-editor v-else-if="f.type === 'richtext'" v-model="form[f.prop]" />
+              <div v-if="f.tip" class="field-tip">{{ f.tip }}</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -155,16 +196,102 @@ const searchFields = computed(() => props.searchFields || [])
 const formFields = computed(() => props.formFields || [])
 const visibleSearch = computed(() => (expand.value ? searchFields.value : searchFields.value.slice(0, 4)))
 
+/* ==================== 下拉数据源（字典 / 接口）==================== */
+// 统一缓存：字典按 dictType，接口按 url+params
+const sourceCache = reactive<Record<string, any[]>>({})
+
+function dictKey(type: string) {
+  return 'dict:' + type
+}
+function srcKey(s: any) {
+  return 'src:' + JSON.stringify({ u: s.url, p: s.params || {} })
+}
+
+/** 字段可选值：options 静态 / dict 字典 / source 或 lookup 接口 */
+function optionsOf(f: any): any[] {
+  if (!f) return []
+  if (f.options) return f.options
+  if (f.dict) return sourceCache[dictKey(f.dict)] || []
+  const src = f.source || f.lookup
+  if (src) return sourceCache[srcKey(src)] || []
+  return []
+}
+
+/** 加载数据字典（实时生效：字典维护后调用 reloadOptions 即刷新） */
+async function ensureDict(type: string) {
+  if (sourceCache[dictKey(type)]) return
+  const rows: any = await crud.list('/admin/sys-dict-data', { dictType: type, size: 500 })
+  const arr: any[] = Array.isArray(rows) ? rows : rows?.records || []
+  arr.sort((a, b) => (a.dictSort ?? 0) - (b.dictSort ?? 0))
+  sourceCache[dictKey(type)] = arr
+    .filter((r) => r.status === undefined || r.status === 1)
+    .map((r) => ({ label: r.dictLabel, value: r.dictValue }))
+}
+
+/** 加载业务下拉（门店 / 技师 / 会员 等），把 ID 换成名称 */
+async function ensureSource(s: any) {
+  const key = srcKey(s)
+  if (sourceCache[key]) return
+  const rows: any = await crud.list(s.url, { ...(s.params || {}), size: 500 })
+  const arr: any[] = Array.isArray(rows) ? rows : rows?.records || []
+  const label = s.label || 'name'
+  const value = s.value || 'id'
+  sourceCache[key] = arr.map((r) => ({ label: r[label], value: r[value] }))
+}
+
+async function preloadOptions() {
+  const fields: any[] = [...(props.columns || []), ...(props.formFields || []), ...(searchFields.value || [])]
+  const dicts = new Set<string>()
+  const srcs: any[] = []
+  fields.forEach((f: any) => {
+    if (f.dict) dicts.add(f.dict)
+    else if ((f.source || f.lookup) && !f.options) srcs.push(f.source || f.lookup)
+  })
+  await Promise.allSettled([
+    ...[...dicts].map((t) => ensureDict(t)),
+    ...srcs.map((s) => ensureSource(s))
+  ])
+}
+
+/** 清空并重新加载所有下拉（字典维护后调用，保证实时生效） */
+async function reloadOptions() {
+  Object.keys(sourceCache).forEach((k) => delete sourceCache[k])
+  await preloadOptions()
+}
+
+/* ==================== 展示 / Label ==================== */
 function tagType(value: any) {
   const map: any = { 待接车: 'info', 待派工: 'warning', 施工中: 'primary', 待质检: 'warning', 待结算: 'danger', 已离店: 'success', 已评价: 'success', 已取消: 'info', 待确认: '', 已确认: 'success' }
   return map[value] || ''
 }
 function format(value: any, col: any) {
-  if (value === null || value === undefined) return '-'
+  if (value === null || value === undefined || value === '') return '-'
   if (col.money) return '¥' + Number(value).toFixed(2)
   return value
 }
+/** 列展示：lookup/dict 优先把 ID / 编码换成名称 */
+function displayValue(row: any, c: any) {
+  const v = row[c.prop]
+  if (c.lookup || c.dict) {
+    const hit = optionsOf(c).find((o: any) => String(o.value) === String(v))
+    if (hit) return hit.label
+  }
+  return format(v, c)
+}
+/** Label 规范：日期类字段统一为「名称(yyyy-MM-dd)」 */
+function fieldLabel(f: any) {
+  const label = f.label || ''
+  if (f.type === 'date' && !label.includes('(')) return label + '(yyyy-MM-dd)'
+  if (f.type === 'datetime' && !label.includes('(')) return label + '(yyyy-MM-dd HH:mm:ss)'
+  return label
+}
+/** 删除确认文案中的日期统一 (yyyy-MM-dd) */
+function fmtDate(v: any) {
+  if (!v) return ''
+  return '(' + String(v).slice(0, 10) + ')'
+}
 
+/* ==================== CRUD ==================== */
 async function load() {
   loading.value = true
   try {
@@ -185,6 +312,7 @@ function onSelect(rows: any[]) { selection.value = rows }
 function openForm(row?: any) {
   form.value = row ? { ...row } : { ...(props.defaultForm || {}) }
   dialogVisible.value = true
+  preloadOptions()
 }
 async function submit() {
   saving.value = true
@@ -199,7 +327,9 @@ async function submit() {
   }
 }
 async function remove(row: any) {
-  await ElMessageBox.confirm('确认删除该记录？', '提示', { type: 'warning' })
+  const dateCol = (props.columns || []).find((c: any) => c.type === 'date' || /date|日期|时间/.test(c.label || ''))
+  const extra = dateCol ? ' ' + fmtDate(row[dateCol.prop]) : ''
+  await ElMessageBox.confirm(`确认删除该记录？${extra}`, '提示', { type: 'warning' })
   await crud.remove(props.url, row.id)
   ElMessage.success('删除成功')
   load()
@@ -211,6 +341,9 @@ async function batchDelete() {
   load()
 }
 
-defineExpose({ load, list })
-onMounted(load)
+defineExpose({ load, list, reloadOptions })
+onMounted(() => {
+  preloadOptions()
+  load()
+})
 </script>

@@ -15,6 +15,8 @@
           <input type="time" v-model="time" />
         </div>
 
+        <label>手机号</label>
+        <input v-model="contactPhone" placeholder="用于接收预约与施工通知" />
         <label>车牌号</label>
         <input v-model="plateNo" placeholder="请输入车牌号" />
         <label>品牌 / 车型</label>
@@ -43,6 +45,7 @@ const today = new Date().toISOString().slice(0, 10)
 const date = ref(today)
 const time = ref('09:00')
 const plateNo = ref('')
+const contactPhone = ref('')
 const brandModel = ref('')
 const remark = ref('')
 const submitting = ref(false)
@@ -59,6 +62,8 @@ function ensureLogin(): Promise<void> {
 
 async function submit() {
   if (!serviceId.value) { alert('请选择服务项目'); return }
+  if (!contactPhone.value) { alert('请填写手机号'); return }
+  if (!/^1\d{10}$/.test(contactPhone.value)) { alert('请填写正确的手机号'); return }
   if (!plateNo.value) { alert('请填写车牌号'); return }
   submitting.value = true
   try {
@@ -67,6 +72,7 @@ async function submit() {
       itemId: serviceId.value,
       itemName: services.value.find((s) => s.id === serviceId.value)?.itemName,
       appointTime: date.value + ' ' + time.value + ':00',
+      contactPhone: contactPhone.value,
       plateNo: plateNo.value,
       brandModel: brandModel.value,
       remark: remark.value,

@@ -38,6 +38,7 @@ public class WorkOrderBizService {
     private final WorkOrderEvaluateService workOrderEvaluateService;
     private final TechnicianService technicianService;
     private final MemberService memberService;
+    private final MemberBizService memberBizService;
     private final MemberBalanceLogService memberBalanceLogService;
     private final MemberPointsLogService memberPointsLogService;
     private final InventoryBizService inventoryBizService;
@@ -52,6 +53,13 @@ public class WorkOrderBizService {
         order.setOrderNo(IdGenUtil.workOrderNo());
         order.setStatus(WorkOrderStatus.WAIT_RECEIVE);
         order.setReceiveTime(LocalDateTime.now());
+        // 手机号即会员：未指定会员时按联系电话自动匹配 / 建档
+        if (order.getMemberId() == null && StrUtil.isNotBlank(order.getContactPhone())) {
+            Member member = memberBizService.findOrCreateByPhone(order.getContactPhone(), order.getContactName());
+            if (member != null) {
+                order.setMemberId(member.getId());
+            }
+        }
         if (order.getTotalAmount() == null) {
             order.setTotalAmount(BigDecimal.ZERO);
         }
@@ -66,6 +74,11 @@ public class WorkOrderBizService {
     @Transactional(rollbackFor = Exception.class)
     public void addChecks(Long workOrderId, List<WorkOrderCheck> checks) {
         WorkOrder order = require(workOrderId);
+        // 检查项仅在「待接车 / 待派工」阶段可录入；进入施工中后锁定，禁止修改
+        if (!WorkOrderStatus.WAIT_RECEIVE.equals(order.getStatus())
+                && !WorkOrderStatus.WAIT_DISPATCH.equals(order.getStatus())) {
+            throw new BusinessException("工单已进入施工环节（当前：" + order.getStatus() + "），检查项不可修改");
+        }
         for (WorkOrderCheck check : checks) {
             check.setId(null);
             check.setWorkOrderId(workOrderId);
@@ -208,6 +221,15 @@ public class WorkOrderBizService {
     @Transactional(rollbackFor = Exception.class)
     public WorkOrder settle(Long workOrderId, String payType, BigDecimal useBalance, Integer usePoints) {
         WorkOrder order = require(workOrderId);
+        // 结算只允许在「待结算」发起；为兼容历史数据，允许从「待质检」直接结算（自动补一次质检通过）
+        boolean fromWaitPay = WorkOrderStatus.WAIT_PAY.equals(order.getStatus());
+        boolean fromWaitCheck = WorkOrderStatus.WAIT_CHECK.equals(order.getStatus());
+        if (!fromWaitPay && !fromWaitCheck) {
+            throw new BusinessException("工单当前状态【" + order.getStatus() + "】不可结算，请先完成质检");
+        }
+        if (fromWaitCheck) {
+            transfer(order, WorkOrderStatus.WAIT_PAY, "质检通过（结算）");
+        }
         recalcTotals(order);
 
         BigDecimal paid = order.getTotalAmount() == null ? BigDecimal.ZERO : order.getTotalAmount();

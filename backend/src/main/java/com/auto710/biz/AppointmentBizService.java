@@ -1,5 +1,6 @@
 package com.auto710.biz;
 
+import cn.hutool.core.util.StrUtil;
 import com.auto710.common.api.ResultCode;
 import com.auto710.common.constant.AppointmentStatus;
 import com.auto710.common.constant.WorkOrderStatus;
@@ -7,6 +8,7 @@ import com.auto710.common.exception.BusinessException;
 import com.auto710.common.util.EncryptUtil;
 import com.auto710.common.util.IdGenUtil;
 import com.auto710.entity.Appointment;
+import com.auto710.entity.Member;
 import com.auto710.entity.WorkOrder;
 import com.auto710.entity.WorkOrderLog;
 import com.auto710.msg.MessageService;
@@ -40,6 +42,7 @@ public class AppointmentBizService {
     private final WorkOrderService workOrderService;
     private final WorkOrderLogService workOrderLogService;
     private final MessageService messageService;
+    private final MemberBizService memberBizService;
 
     /**
      * 创建预约（防重提交由注解在 Controller 层控制）
@@ -53,6 +56,14 @@ public class AppointmentBizService {
 
         appointment.setAppointmentNo(IdGenUtil.appointmentNo());
         appointment.setStatus(AppointmentStatus.WAIT_CONFIRM);
+        // 手机号即会员：未登录会员（memberId 为空）时按联系电话自动匹配 / 建档
+        if (appointment.getMemberId() == null && StrUtil.isNotBlank(appointment.getContactPhone())) {
+            Member member = memberBizService.findOrCreateByPhone(
+                    appointment.getContactPhone(), appointment.getContactName());
+            if (member != null) {
+                appointment.setMemberId(member.getId());
+            }
+        }
         // 车牌 / 手机号加密由 AppointmentServiceImpl 写入钩子统一处理（含后台维护路径）
         appointmentService.save(appointment);
 
@@ -109,6 +120,14 @@ public class AppointmentBizService {
 
         workOrder.setAppointmentId(appointmentId);
         workOrder.setMemberId(appointment.getMemberId());
+        // 兜底：历史预约单未关联会员时，按联系电话补建
+        if (workOrder.getMemberId() == null && StrUtil.isNotBlank(workOrder.getContactPhone())) {
+            Member member = memberBizService.findOrCreateByPhone(
+                    workOrder.getContactPhone(), workOrder.getContactName());
+            if (member != null) {
+                workOrder.setMemberId(member.getId());
+            }
+        }
         workOrder.setStoreId(appointment.getStoreId());
         workOrder.setPlateNo(appointment.getPlateNo());
         workOrder.setContactName(appointment.getContactName());

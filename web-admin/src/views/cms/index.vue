@@ -29,16 +29,20 @@ import CrudTable from '@/components/CrudTable.vue'
 
 const tab = ref('article')
 
+/** 文章分类下拉（显示分类名称，不暴露 ID） */
+const articleCategorySource = { url: '/admin/cms-article-category', label: 'categoryName', value: 'id' }
+
 const articleColumns = [
   { prop: 'title', label: '标题', minWidth: 200 },
   { prop: 'author', label: '作者', width: 100 },
   { prop: 'viewCount', label: '浏览', width: 80 },
+  { prop: 'categoryId', label: '分类', lookup: articleCategorySource, width: 130 },
   { prop: 'isTop', label: '置顶', width: 70 },
   { prop: 'status', label: '状态', width: 80 }
 ]
 const articleForm = [
   { prop: 'title', label: '标题' }, { prop: 'titleEn', label: '英文标题' },
-  { prop: 'categoryId', label: '分类ID', type: 'number' }, { prop: 'author', label: '作者' },
+  { prop: 'categoryId', label: '所属分类', type: 'select', source: articleCategorySource }, { prop: 'author', label: '作者' },
   { prop: 'isTop', label: '置顶', type: 'switch' },
   { prop: 'cover', label: '封面图', type: 'image', span: 24 },
   { prop: 'summary', label: '摘要', type: 'textarea', span: 24 },
@@ -52,14 +56,14 @@ const articleForm = [
 const catColumns = [
   { prop: 'categoryName', label: '分类名称' },
   { prop: 'categoryNameEn', label: '英文名称' },
-  { prop: 'parentId', label: '父级ID', width: 90 },
+  { prop: 'parentId', label: '上级分类', lookup: articleCategorySource, width: 130 },
   { prop: 'sort', label: '排序', width: 80 },
   { prop: 'status', label: '状态', width: 80 }
 ]
 const catForm = [
   { prop: 'categoryName', label: '分类名称' },
   { prop: 'categoryNameEn', label: '英文名称' },
-  { prop: 'parentId', label: '父级ID', type: 'number' },
+  { prop: 'parentId', label: '上级分类', type: 'select', source: articleCategorySource },
   { prop: 'sort', label: '排序', type: 'number' },
   { prop: 'status', label: '启用', type: 'switch' }
 ]

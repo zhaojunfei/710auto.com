@@ -15,10 +15,10 @@
         <crud-table url="/admin/part-stock-record" title="流水" :columns="recordColumns" :can-add="false" :can-edit="false" :search-fields="[{ prop: 'partNameLike', label: '配件名称' }]" />
       </el-tab-pane>
       <el-tab-pane label="配件分类" name="category">
-        <crud-table url="/admin/part-category" title="分类" :columns="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'sort', label: '排序', width: 80 }, { prop: 'status', label: '状态', width: 80 }]" :form-fields="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'parentId', label: '父级ID', type: 'number' }, { prop: 'sort', label: '排序', type: 'number' }, { prop: 'status', label: '启用', type: 'switch' }]" />
+        <crud-table url="/admin/part-category" title="分类" :columns="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'parentId', label: '上级分类', lookup: partCategorySource }, { prop: 'sort', label: '排序', width: 80 }, { prop: 'status', label: '状态', width: 80 }]" :form-fields="[{ prop: 'categoryName', label: '分类名称' }, { prop: 'parentId', label: '上级分类', type: 'select', source: partCategorySource }, { prop: 'sort', label: '排序', type: 'number' }, { prop: 'status', label: '启用', type: 'switch' }]" />
       </el-tab-pane>
       <el-tab-pane label="供应商" name="supplier">
-        <crud-table url="/admin/part-supplier" title="供应商" :columns="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '登录账号ID', width: 110 }, { prop: 'status', label: '状态', width: 80 }]" :form-fields="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '绑定登录账号(sys_user.id)', type: 'number' }, { prop: 'address', label: '地址', span: 24 }, { prop: 'remark', label: '备注', span: 24 }, { prop: 'status', label: '启用', type: 'switch' }]" />
+        <crud-table url="/admin/part-supplier" title="供应商" :columns="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '绑定登录账号', lookup: userSource, width: 130 }, { prop: 'status', label: '状态', width: 80 }]" :form-fields="[{ prop: 'supplierName', label: '供应商' }, { prop: 'contactName', label: '联系人' }, { prop: 'phone', label: '电话' }, { prop: 'userId', label: '绑定登录账号', type: 'select', source: userSource }, { prop: 'address', label: '地址', span: 24 }, { prop: 'remark', label: '备注', span: 24 }, { prop: 'status', label: '启用', type: 'switch' }]" />
       </el-tab-pane>
       <el-tab-pane label="供应商送货单" name="delivery">
         <crud-table
@@ -28,7 +28,7 @@
           :can-add="false"
           :columns="deliveryColumns"
           :form-fields="deliveryForm"
-          :search-fields="[{ prop: 'deliveryNoLike', label: '送货单号' }, { prop: 'supplierNameLike', label: '供应商' }, { prop: 'status', label: '状态', options: ['待确认', '已入库', '已拒绝'].map((v) => ({ label: v, value: v })) }]"
+          :search-fields="[{ prop: 'deliveryNoLike', label: '送货单号' }, { prop: 'supplierNameLike', label: '供应商' }, { prop: 'storeId', label: '收货门店', lookup: storeSource }, { prop: 'status', label: '状态', options: ['待确认', '已入库', '已拒绝'].map((v) => ({ label: v, value: v })) }]"
         >
           <template #row-actions="{ row }">
             <el-button v-if="row.status === '待确认'" link type="success" @click="confirmDelivery(row, true)">确认入库</el-button>
@@ -64,7 +64,11 @@
 
     <el-dialog v-model="stockDialog" title="出入库" width="480px">
       <el-form label-width="90px">
-        <el-form-item label="配件ID"><el-input-number v-model="stockForm.partId" :min="1" style="width:100%" /></el-form-item>
+        <el-form-item label="配件">
+          <el-select v-model="stockForm.partId" filterable placeholder="请选择配件" style="width:100%">
+            <el-option v-for="p in parts" :key="p.id" :label="p.partName + (p.spec ? '（' + p.spec + '）' : '')" :value="p.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="类型">
           <el-radio-group v-model="stockForm.type">
             <el-radio value="in">入库</el-radio>
@@ -94,9 +98,15 @@ const warnings = ref<any[]>([])
 const stockDialog = ref(false)
 const stockForm = reactive<any>({ type: 'in', quantity: 1 })
 
+/** 下拉数据源（业务界面显示名称，不暴露 ID） */
+const storeSource = { url: '/admin/store-info', label: 'storeName', value: 'id' }
+const partCategorySource = { url: '/admin/part-category', label: 'categoryName', value: 'id' }
+const userSource = { url: '/admin/sys-user', label: 'realName', value: 'id' }
+
 const columns = [
   { prop: 'partName', label: '配件名称', minWidth: 160 },
   { prop: 'partCode', label: '编码', width: 110 },
+  { prop: 'categoryId', label: '分类', lookup: partCategorySource, width: 120 },
   { prop: 'spec', label: '规格', width: 110 },
   { prop: 'purchasePrice', label: '成本', width: 90, money: true },
   { prop: 'salePrice', label: '售价', width: 90, money: true },
@@ -108,7 +118,7 @@ const columns = [
 const formFields = [
   { prop: 'partName', label: '配件名称' },
   { prop: 'partCode', label: '配件编码' },
-  { prop: 'categoryId', label: '分类ID', type: 'number' },
+  { prop: 'categoryId', label: '所属分类', type: 'select', source: partCategorySource },
   { prop: 'brand', label: '品牌' },
   { prop: 'spec', label: '规格型号' },
   { prop: 'unit', label: '单位' },
@@ -120,7 +130,10 @@ const formFields = [
   { prop: 'cover', label: '图片', type: 'image', span: 24 },
   { prop: 'status', label: '启用', type: 'switch' }
 ]
-const searchFields = [{ prop: 'partNameLike', label: '配件名称' }]
+const searchFields = [
+  { prop: 'partNameLike', label: '配件名称' },
+  { prop: 'categoryId', label: '所属分类', lookup: partCategorySource }
+]
 const recordColumns = [
   { prop: 'partName', label: '配件' },
   { prop: 'recordType', label: '类型', width: 80 },
@@ -151,6 +164,7 @@ const deliveryItems = ref<any[]>([])
 const deliveryColumns = [
   { prop: 'deliveryNo', label: '送货单号', minWidth: 150 },
   { prop: 'supplierName', label: '供应商', minWidth: 140 },
+  { prop: 'storeId', label: '收货门店', lookup: storeSource, width: 130 },
   { prop: 'itemCount', label: '条数', width: 70 },
   { prop: 'totalAmount', label: '金额', width: 110, money: true },
   { prop: 'expectDate', label: '预计到货', width: 120 },
@@ -158,8 +172,8 @@ const deliveryColumns = [
   { prop: 'status', label: '状态', width: 100, tag: true }
 ]
 const deliveryForm = [
-  { prop: 'storeId', label: '收货门店ID', type: 'number' },
-  { prop: 'expectDate', label: '预计到货日期' },
+  { prop: 'storeId', label: '收货门店', type: 'select', source: storeSource },
+  { prop: 'expectDate', label: '预计到货日期', type: 'date' },
   { prop: 'status', label: '状态', type: 'select', options: ['待确认', '已入库', '已拒绝'].map((v) => ({ label: v, value: v })) },
   { prop: 'confirmRemark', label: '确认备注', type: 'textarea', span: 24 },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
@@ -179,5 +193,9 @@ async function viewDelivery(row: any) {
   deliveryDialog.value = true
 }
 
-onMounted(async () => { warnings.value = await request.get('/admin/inventory/warnings') })
+const parts = ref<any[]>([])
+onMounted(async () => {
+  warnings.value = await request.get('/admin/inventory/warnings')
+  parts.value = await request.get('/admin/part-info/list')
+})
 </script>

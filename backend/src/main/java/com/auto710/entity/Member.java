@@ -44,6 +44,12 @@ public class Member implements Serializable {
     /** 手机号(加密) */
     private String phone;
 
+    /** 登录密码(BCrypt，初始为手机号后6位) */
+    private String password;
+
+    /** 首次登录是否需改密 1是 0否 */
+    private Integer needChangePwd;
+
     /** 性别 0未知 1男 2女 */
     private Integer gender;
 

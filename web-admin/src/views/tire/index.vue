@@ -27,7 +27,7 @@
           title="寄存货位库存"
           :columns="stockColumns"
           :form-fields="stockForm"
-          :search-fields="[{ prop: 'positionNoLike', label: '货位号' }, { prop: 'plateNoLike', label: '车牌' }, { prop: 'status', label: '状态', options: ['在库', '已出库'].map((v) => ({ label: v, value: v })) }]"
+          :search-fields="[{ prop: 'positionNoLike', label: '货位号' }, { prop: 'plateNoLike', label: '车牌' }, { prop: 'status', label: '状态', dict: 'stock_status' }]"
           :default-form="{ status: '在库' }"
         />
       </el-tab-pane>
@@ -38,7 +38,7 @@
           title="寄存轮胎明细"
           :columns="itemColumns"
           :form-fields="itemForm"
-          :search-fields="[{ prop: 'storageOrderId', label: '寄存单ID' }]"
+          :search-fields="[{ prop: 'storageOrderId', label: '寄存单', lookup: storageSource }]"
         />
       </el-tab-pane>
 
@@ -50,7 +50,7 @@
           :can-edit="false"
           :can-delete="false"
           :columns="proofColumns"
-          :search-fields="[{ prop: 'storageOrderId', label: '寄存单ID' }]"
+          :search-fields="[{ prop: 'storageOrderId', label: '寄存单', lookup: storageSource }]"
         />
       </el-tab-pane>
     </el-tabs>
@@ -66,64 +66,79 @@ import CrudTable from '@/components/CrudTable.vue'
 const tab = ref('order')
 const orderTableRef = ref<any>()
 
+/** 门店 / 会员 / 寄存单 下拉（统一显示名称，不暴露 ID） */
+const storeSource = { url: '/admin/store-info', label: 'storeName', value: 'id' }
+const memberSource = { url: '/admin/member', label: 'nickname', value: 'id' }
+const storageSource = { url: '/admin/tire-storage', label: 'storageNo', value: 'id' }
+
 const columns = [
   { prop: 'storageNo', label: '寄存单号', minWidth: 150 },
+  { prop: 'memberId', label: '会员', lookup: memberSource, width: 120 },
   { prop: 'plateNo', label: '车牌', width: 120 },
+  { prop: 'storeId', label: '门店', lookup: storeSource, width: 130 },
   { prop: 'tireCount', label: '数量', width: 70 },
-  { prop: 'tireType', label: '类型', width: 90 },
+  { prop: 'tireType', label: '类型', dict: 'tire_type', width: 90 },
   { prop: 'positionNo', label: '货位', width: 90 },
   { prop: 'storageFee', label: '寄存费', width: 100, money: true },
   { prop: 'overdueFee', label: '超期费', width: 100, money: true },
-  { prop: 'startDate', label: '开始', width: 110 },
-  { prop: 'endDate', label: '到期', width: 110 },
-  { prop: 'status', label: '状态', width: 100, tag: true }
+  { prop: 'startDate', label: '开始日期', width: 120 },
+  { prop: 'endDate', label: '到期日期', width: 120 },
+  { prop: 'status', label: '状态', dict: 'tire_storage_status', width: 100, tag: true }
 ]
 const formFields = [
+  { prop: 'memberId', label: '会员', type: 'select', source: memberSource },
+  { prop: 'storeId', label: '门店', type: 'select', source: storeSource },
   { prop: 'plateNo', label: '车牌号' },
   { prop: 'tireCount', label: '轮胎数量', type: 'number' },
-  { prop: 'tireType', label: '轮胎类型' },
+  { prop: 'tireType', label: '轮胎类型', type: 'select', dict: 'tire_type' },
   { prop: 'tireBrand', label: '品牌' },
   { prop: 'tireSize', label: '规格' },
   { prop: 'positionNo', label: '货位号' },
   { prop: 'storageFee', label: '寄存费', type: 'number' },
-  { prop: 'endDate', label: '预计取胎日期' },
-  { prop: 'status', label: '状态' }
+  { prop: 'overdueFee', label: '超期保管费', type: 'number' },
+  { prop: 'startDate', label: '寄存开始日期', type: 'date' },
+  { prop: 'endDate', label: '预计取胎日期', type: 'date' },
+  { prop: 'realOutDate', label: '实际取胎日期', type: 'date' },
+  { prop: 'remindPreference', label: '取胎提醒偏好' },
+  { prop: 'status', label: '状态', type: 'select', dict: 'tire_storage_status' },
+  { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
 ]
 const searchFields = [
   { prop: 'storageNoLike', label: '寄存单号' },
   { prop: 'plateNoLike', label: '车牌' },
-  { prop: 'status', label: '状态', options: ['已寄存', '寄存中', '待取胎', '已取胎', '超期'].map((v) => ({ label: v, value: v })) }
+  { prop: 'status', label: '状态', dict: 'tire_storage_status' }
 ]
 
 const stockColumns = [
   { prop: 'positionNo', label: '货位号', width: 100 },
   { prop: 'plateNo', label: '车牌', width: 120 },
-  { prop: 'storageOrderId', label: '寄存单ID', width: 110 },
+  { prop: 'storageOrderId', label: '寄存单', lookup: storageSource, width: 150 },
+  { prop: 'storeId', label: '门店', lookup: storeSource, width: 130 },
   { prop: 'tireCount', label: '数量', width: 80 },
-  { prop: 'status', label: '状态', width: 90 },
+  { prop: 'status', label: '状态', dict: 'stock_status', width: 90 },
   { prop: 'inTime', label: '入库时间', width: 170 },
   { prop: 'outTime', label: '出库时间', width: 170 }
 ]
 const stockForm = [
-  { prop: 'storeId', label: '门店ID', type: 'number' },
+  { prop: 'storeId', label: '门店', type: 'select', source: storeSource },
   { prop: 'positionNo', label: '货位号' },
-  { prop: 'storageOrderId', label: '寄存单ID', type: 'number' },
+  { prop: 'storageOrderId', label: '寄存单', type: 'select', source: storageSource },
   { prop: 'plateNo', label: '车牌号' },
   { prop: 'tireCount', label: '轮胎数量', type: 'number' },
-  { prop: 'status', label: '状态', type: 'select', options: [{ label: '在库', value: '在库' }, { label: '已出库', value: '已出库' }] }
+  { prop: 'status', label: '状态', type: 'select', dict: 'stock_status' }
 ]
 
 const itemColumns = [
-  { prop: 'storageOrderId', label: '寄存单ID', width: 110 },
-  { prop: 'tirePosition', label: '位置', width: 100 },
+  { prop: 'storageOrderId', label: '寄存单', lookup: storageSource, width: 150 },
+  { prop: 'tirePosition', label: '位置', dict: 'tire_position', width: 100 },
   { prop: 'tireBrand', label: '品牌', width: 120 },
   { prop: 'tireSize', label: '规格', width: 140 },
   { prop: 'treadDepth', label: '花纹深度', width: 110 },
   { prop: 'remark', label: '备注', minWidth: 140 }
 ]
 const itemForm = [
-  { prop: 'storageOrderId', label: '寄存单ID', type: 'number' },
-  { prop: 'tirePosition', label: '位置', type: 'select', options: ['左前', '右前', '左后', '右后', '备胎'].map((v) => ({ label: v, value: v })) },
+  { prop: 'storageOrderId', label: '寄存单', type: 'select', source: storageSource },
+  { prop: 'tirePosition', label: '位置', type: 'select', dict: 'tire_position' },
   { prop: 'tireBrand', label: '品牌' },
   { prop: 'tireSize', label: '规格' },
   { prop: 'treadDepth', label: '花纹深度' },
@@ -132,12 +147,18 @@ const itemForm = [
 ]
 
 const proofColumns = [
-  { prop: 'storageOrderId', label: '寄存单ID', width: 110 },
+  { prop: 'storageOrderId', label: '寄存单', lookup: storageSource, width: 150 },
   { prop: 'proofType', label: '类型', width: 100 },
   { prop: 'operatorName', label: '操作人', width: 120 },
   { prop: 'proofTime', label: '凭证时间', width: 170 },
   { prop: 'remark', label: '备注', minWidth: 160 }
 ]
+
+function today() {
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
 
 async function remind() {
   const n = await request.post('/admin/tire-storage/remind', null, { params: { daysBefore: 7 } })
@@ -148,7 +169,7 @@ async function scanOverdue() {
   ElMessage.success(`超期扫描完成，标记 ${n} 条`)
 }
 async function pickup(row: any) {
-  await ElMessageBox.confirm('确认该车已取胎并核销库存？', '取胎核销', { type: 'warning' })
+  await ElMessageBox.confirm(`确认该车已取胎并核销库存？取胎日期(${today()})`, '取胎核销', { type: 'warning' })
   await request.post(`/admin/tire-storage/${row.id}/pickup`)
   ElMessage.success('取胎核销成功')
   orderTableRef.value?.load()

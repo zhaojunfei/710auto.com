@@ -1,6 +1,7 @@
 package com.auto710.biz;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.auto710.common.context.LoginUser;
 import com.auto710.common.exception.BusinessException;
 import com.auto710.common.util.EncryptUtil;
@@ -86,8 +87,95 @@ public class MemberBizService {
         return result;
     }
 
-    public Member profile(Long memberId) {
-        Member member = memberService.getById(memberId);
+    /**
+     * 手机号即会员：按手机号查找会员，不存在则自动创建。
+     * <p>新会员：用户名=手机号，初始密码=手机号后 6 位（BCrypt），首次登录引导改密。</p>
+     *
+     * @param phone    明文手机号
+     * @param realName 姓名（可空）
+     * @return 已存在或新建的会员；手机号为空时返回 null
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Member findOrCreateByPhone(String phone, String realName) {
+        if (StrUtil.isBlank(phone)) {
+            return null;
+        }
+        String plain = phone.trim();
+        String enc = EncryptUtil.isEncrypted(plain) ? plain : EncryptUtil.encrypt(plain);
+        Member member = memberService.getOne(new LambdaQueryWrapper<Member>()
+                .eq(Member::getPhone, enc).last("limit 1"));
+        if (member != null) {
+            if (StrUtil.isNotBlank(realName) && StrUtil.isBlank(member.getRealName())) {
+                member.setRealName(realName);
+                memberService.updateById(member);
+            }
+            return member;
+        }
+        member = new Member();
+        member.setNickname(StrUtil.isBlank(realName) ? plain : realName);
+        member.setRealName(realName);
+        member.setPhone(enc);
+        member.setPassword(BCrypt.hashpw(last6(plain)));
+        member.setNeedChangePwd(1);
+        member.setPoints(0);
+        member.setBalance(BigDecimal.ZERO);
+        member.setSource("admin");
+        member.setStatus(1);
+        member.setRemark("系统按手机号自动创建，初始密码为手机号后6位");
+        memberService.save(member);
+        return member;
+    }
+
+    /**
+     * 会员端手机号 + 密码登录（用户名=手机号，初始密码=手机号后 6 位）
+     */
+    public Map<String, Object> loginByPhone(String phone, String password) {
+        if (StrUtil.isBlank(phone) || StrUtil.isBlank(password)) {
+            throw new BusinessException("请输入手机号和密码");
+        }
+        Member member = memberService.getOne(new LambdaQueryWrapper<Member>()
+                .eq(Member::getPhone, EncryptUtil.encrypt(phone.trim())).last("limit 1"));
+        if (member == null || StrUtil.isBlank(member.getPassword())
+                || !BCrypt.checkpw(password, member.getPassword())) {
+            throw new BusinessException("手机号或密码错误");
+        }
+        if (member.getStatus() != null && member.getStatus() == 0) {
+            throw new BusinessException("账号已被禁用");
+        }
+        LoginUser loginUser = new LoginUser();
+        loginUser.setUserId(member.getId());
+        loginUser.setUsername(StrUtil.blankToDefault(member.getNickname(), phone));
+        loginUser.setUserType("MEMBER");
+        Map<String, Object> result = new HashMap<>();
+        result.put("token", jwtUtil.createMemberToken(loginUser));
+        result.put("member", member);
+        result.put("needChangePwd", member.getNeedChangePwd() != null && member.getNeedChangePwd() == 1);
+        return result;
+    }
+
+    /**
+     * 会员修改密码（改密后清除「首次登录需改密」标记）
+     */
+    public boolean changePassword(Long memberId, String oldPassword, String newPassword) {
+        Member member = profile(memberId);
+        if (StrUtil.isNotBlank(member.getPassword())
+                && !BCrypt.checkpw(oldPassword == null ? "" : oldPassword, member.getPassword())) {
+            throw new BusinessException("原密码错误");
+        }
+        if (StrUtil.isBlank(newPassword) || newPassword.length() < 6) {
+            throw new BusinessException("新密码至少 6 位");
+        }
+        member.setPassword(BCrypt.hashpw(newPassword));
+        member.setNeedChangePwd(0);
+        memberService.updateById(member);
+        return true;
+    }
+
+    private String last6(String phone) {
+        return phone.length() <= 6 ? phone : phone.substring(phone.length() - 6);
+    }
+
+    public Member profile(Long memberId) {        Member member = memberService.getById(memberId);
         if (member == null) {
             throw new BusinessException("会员不存在");
         }

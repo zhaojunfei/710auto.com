@@ -426,6 +426,8 @@ CREATE TABLE `member` (
   `avatar` VARCHAR(512) DEFAULT NULL COMMENT '头像',
   `real_name` VARCHAR(64) DEFAULT NULL COMMENT '真实姓名',
   `phone` VARCHAR(128) DEFAULT NULL COMMENT '手机号(加密)',
+  `password` VARCHAR(128) DEFAULT NULL COMMENT '登录密码(BCrypt，初始为手机号后6位)',
+  `need_change_pwd` TINYINT DEFAULT NULL COMMENT '首次登录是否需改密 1是 0否',
   `gender` TINYINT DEFAULT NULL COMMENT '性别 0未知 1男 2女',
   `birthday` VARCHAR(16) DEFAULT NULL COMMENT '生日',
   `level_id` BIGINT DEFAULT NULL COMMENT '会员等级ID',

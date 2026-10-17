@@ -91,6 +91,13 @@ public class AdminWorkOrderController {
         return Result.ok(true);
     }
 
+    @Operation(summary = "完工提交（施工中 → 待质检）")
+    @PostMapping("/{id}/finish")
+    @AuditLog(module = "工单", operation = "完工提交")
+    public Result<Boolean> finish(@PathVariable Long id) {
+        return Result.ok(bizService.finish(id));
+    }
+
     @Operation(summary = "质检")
     @PostMapping("/{id}/check")
     @AuditLog(module = "工单", operation = "质检")

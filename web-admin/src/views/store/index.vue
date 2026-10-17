@@ -23,6 +23,9 @@ import CrudTable from '@/components/CrudTable.vue'
 
 const tab = ref('store')
 
+/** 门店下拉（统一显示门店名称，不暴露门店ID） */
+const storeSource = { url: '/admin/store-info', label: 'storeName', value: 'id' }
+
 const storeColumns = [{ prop: 'storeName', label: '门店名称' }, { prop: 'phone', label: '电话' }, { prop: 'address', label: '地址', minWidth: 200 }, { prop: 'status', label: '状态', width: 80 }]
 const storeForm = [
   { prop: 'storeName', label: '门店名称' }, { prop: 'storeNameEn', label: '英文名称' },
@@ -36,22 +39,57 @@ const storeForm = [
   { prop: 'status', label: '启用', type: 'switch' }
 ]
 
-const stationColumns = [{ prop: 'stationName', label: '工位' }, { prop: 'stationType', label: '类型' }, { prop: 'capacity', label: '同时开工上限' }, { prop: 'status', label: '状态', width: 80 }]
-const stationForm = [{ prop: 'stationName', label: '工位名称' }, { prop: 'stationType', label: '类型', type: 'select', options: ['机修', '保养', '轮胎', '美容'].map((v) => ({ label: v, value: v })) }, { prop: 'capacity', label: '同时开工上限', type: 'number' }, { prop: 'storeId', label: '门店ID', type: 'number' }, { prop: 'sort', label: '排序', type: 'number' }, { prop: 'status', label: '启用', type: 'switch' }]
+const stationColumns = [
+  { prop: 'stationName', label: '工位' },
+  { prop: 'stationType', label: '类型', dict: 'station_type', width: 100 },
+  { prop: 'storeId', label: '所属门店', lookup: storeSource },
+  { prop: 'capacity', label: '同时开工上限', width: 120 },
+  { prop: 'status', label: '状态', width: 80 }
+]
+const stationForm = [
+  { prop: 'stationName', label: '工位名称' },
+  { prop: 'stationType', label: '类型', type: 'select', dict: 'station_type' },
+  { prop: 'capacity', label: '同时开工上限', type: 'number' },
+  { prop: 'storeId', label: '所属门店', type: 'select', source: storeSource },
+  { prop: 'sort', label: '排序', type: 'number' },
+  { prop: 'status', label: '启用', type: 'switch' }
+]
 
-const techColumns = [{ prop: 'techName', label: '技师' }, { prop: 'techType', label: '工种' }, { prop: 'level', label: '等级' }, { prop: 'status', label: '状态', width: 80 }]
+const techColumns = [
+  { prop: 'techName', label: '技师' },
+  { prop: 'techType', label: '工种', dict: 'tech_type', width: 100 },
+  { prop: 'level', label: '等级', dict: 'tech_level', width: 100 },
+  { prop: 'storeId', label: '所属门店', lookup: storeSource },
+  { prop: 'userId', label: '登录账号', lookup: { url: '/admin/sys-user', label: 'realName', value: 'id' } },
+  { prop: 'status', label: '状态', width: 80 }
+]
 const techForm = [
   { prop: 'techName', label: '技师姓名' },
-  { prop: 'techType', label: '工种', type: 'select', options: ['机修', '钣喷', '美容', '轮胎', '通用'].map((v) => ({ label: v, value: v })) },
-  { prop: 'level', label: '等级', type: 'select', options: ['初级', '中级', '高级', '专家'].map((v) => ({ label: v, value: v })) },
-  { prop: 'userId', label: '关联系统用户ID', type: 'number' },
-  { prop: 'storeId', label: '门店ID', type: 'number' },
-  { prop: 'phone', label: '手机号' }, { prop: 'certNo', label: '资质证书编号' },
+  { prop: 'techType', label: '工种', type: 'select', dict: 'tech_type' },
+  { prop: 'level', label: '等级', type: 'select', dict: 'tech_level' },
+  { prop: 'storeId', label: '所属门店', type: 'select', source: storeSource },
+  { prop: 'phone', label: '手机号' },
+  { prop: 'userId', label: '关联系统用户', type: 'select', source: { url: '/admin/sys-user', label: 'realName', value: 'id' }, tip: '留空则保存时按手机号自动创建技师登录账号（用户名=手机号，初始密码=手机号后6位）' },
+  { prop: 'certNo', label: '资质证书编号' },
   { prop: 'qualification', label: '资质证明', type: 'image', span: 24 },
   { prop: 'intro', label: '简介', type: 'textarea', span: 24 },
   { prop: 'status', label: '在职', type: 'switch' }
 ]
 
-const scheduleColumns = [{ prop: 'technicianId', label: '技师ID' }, { prop: 'workDate', label: '日期' }, { prop: 'shift', label: '班次' }, { prop: 'startTime', label: '开始' }, { prop: 'endTime', label: '结束' }]
-const scheduleForm = [{ prop: 'technicianId', label: '技师ID', type: 'number' }, { prop: 'workDate', label: '日期(yyyy-MM-dd)' }, { prop: 'shift', label: '班次', type: 'select', options: ['早班', '中班', '晚班', '休息'].map((v) => ({ label: v, value: v })) }, { prop: 'startTime', label: '开始时间' }, { prop: 'endTime', label: '结束时间' }, { prop: 'status', label: '有效', type: 'switch' }]
+const scheduleColumns = [
+  { prop: 'technicianId', label: '技师', lookup: { url: '/admin/technician', label: 'techName', value: 'id' } },
+  { prop: 'workDate', label: '日期', width: 130 },
+  { prop: 'shift', label: '班次', dict: 'shift', width: 100 },
+  { prop: 'startTime', label: '开始', width: 110 },
+  { prop: 'endTime', label: '结束', width: 110 },
+  { prop: 'status', label: '状态', width: 80 }
+]
+const scheduleForm = [
+  { prop: 'technicianId', label: '技师', type: 'select', source: { url: '/admin/technician', label: 'techName', value: 'id' } },
+  { prop: 'workDate', label: '日期', type: 'date' },
+  { prop: 'shift', label: '班次', type: 'select', dict: 'shift' },
+  { prop: 'startTime', label: '开始时间' },
+  { prop: 'endTime', label: '结束时间' },
+  { prop: 'status', label: '有效', type: 'switch' }
+]
 </script>

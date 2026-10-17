@@ -62,6 +62,7 @@ export const workOrderApi = {
   receive: (id: number) => request.post(`/admin/work-order/${id}/receive`),
   start: (id: number) => request.post(`/admin/work-order/${id}/start`),
   dispatch: (id: number, technicianId: number) => request.post(`/admin/work-order/${id}/dispatch`, null, { params: { technicianId } }),
+  finish: (id: number) => request.post(`/admin/work-order/${id}/finish`),
   qualityCheck: (id: number, pass: boolean, remark?: string) => request.post(`/admin/work-order/${id}/check`, null, { params: { pass, remark } }),
   settle: (id: number, payType: string, useBalance?: number, usePoints?: number) => request.post(`/admin/work-order/${id}/settle`, null, { params: { payType, useBalance, usePoints } }),
   items: (id: number) => request.get(`/admin/work-order/${id}/items`),
@@ -87,4 +88,10 @@ export const appointmentApi = {
 export const refundApi = {
   audit: (refundId: number, pass: boolean, remark?: string) =>
     request.post(`/admin/work-order/refund/${refundId}/audit`, null, { params: { pass, remark } })
+}
+
+/** 手机号即会员：按手机号查询 / 自动建档 */
+export const memberLookupApi = {
+  find: (phone: string) => request.get('/admin/member-lookup/find', { params: { phone } }),
+  ensure: (data: { phone: string; realName?: string }) => request.post('/admin/member-lookup/ensure', data)
 }

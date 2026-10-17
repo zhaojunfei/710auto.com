@@ -302,3 +302,175 @@ INSERT INTO `cms_menu` (platform, parent_id, menu_name, menu_name_en, menu_type,
 ('h5', 0, '首页', 'Home', 'view', '/', NULL, NULL, NULL, 1, 1, 1, NOW(), NOW(), 0),
 ('h5', 0, '服务', 'Services', 'view', '/services', NULL, NULL, NULL, 2, 1, 1, NOW(), NOW(), 0),
 ('h5', 0, '我的', 'Mine', 'view', '/mine', NULL, NULL, NULL, 3, 1, 1, NOW(), NOW(), 0);
+
+-- ---------------- 数据字典（所有下拉统一由字典维护，禁止硬编码；幂等可重复执行） ----------------
+DELETE FROM `sys_dict_data` WHERE `dict_type` IN (
+  'tech_type','tech_level','station_type','shift','pay_type','gender',
+  'work_order_status','appointment_status','member_source','coupon_type',
+  'balance_type','points_type','tire_type','item_type');
+
+DELETE FROM `sys_dict_type` WHERE `dict_type` IN (
+  'tech_type','tech_level','station_type','shift','pay_type','gender',
+  'work_order_status','appointment_status','member_source','coupon_type',
+  'balance_type','points_type','tire_type','item_type');
+
+INSERT INTO `sys_dict_type` (dict_type, dict_name, status, remark, create_time, update_time, deleted) VALUES
+('tech_type', '工种', 1, '技师工种', NOW(), NOW(), 0),
+('tech_level', '技师等级', 1, '技师等级', NOW(), NOW(), 0),
+('station_type', '工位类型', 1, '工位类型', NOW(), NOW(), 0),
+('shift', '排班班次', 1, '技师排班班次', NOW(), NOW(), 0),
+('pay_type', '结算方式', 1, '工单结算支付方式', NOW(), NOW(), 0),
+('gender', '性别', 1, '会员性别', NOW(), NOW(), 0),
+('work_order_status', '工单状态', 1, '工单状态机', NOW(), NOW(), 0),
+('appointment_status', '预约状态', 1, '预约单状态', NOW(), NOW(), 0),
+('member_source', '会员来源', 1, '会员注册来源', NOW(), NOW(), 0),
+('coupon_type', '优惠券类型', 1, '优惠券类型', NOW(), NOW(), 0),
+('balance_type', '储值流水类型', 1, '会员储值变动类型', NOW(), NOW(), 0),
+('points_type', '积分流水类型', 1, '会员积分变动类型', NOW(), NOW(), 0),
+('tire_type', '轮胎类型', 1, '存胎轮胎类型', NOW(), NOW(), 0),
+('item_type', '工单明细类型', 1, '工单用料类型', NOW(), NOW(), 0);
+
+INSERT INTO `sys_dict_data` (dict_type, dict_label, dict_value, dict_sort, css_class, status, remark, create_time, update_time, deleted) VALUES
+-- 工种
+('tech_type', '机修', '机修', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_type', '钣喷', '钣喷', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_type', '美容', '美容', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_type', '轮胎', '轮胎', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_type', '电工', '电工', 5, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_type', '通用', '通用', 9, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 技师等级
+('tech_level', '初级', '初级', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_level', '中级', '中级', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_level', '高级', '高级', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('tech_level', '专家', '专家', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 工位类型
+('station_type', '机修', '机修', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('station_type', '保养', '保养', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('station_type', '轮胎', '轮胎', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('station_type', '美容', '美容', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 班次
+('shift', '早班', '早班', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('shift', '中班', '中班', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('shift', '晚班', '晚班', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('shift', '休息', '休息', 9, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 结算方式
+('pay_type', '微信', '微信', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('pay_type', '储值', '储值', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('pay_type', '现金', '现金', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('pay_type', '混合', '混合', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 性别
+('gender', '未知', '0', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('gender', '男', '1', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('gender', '女', '2', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 工单状态
+('work_order_status', '待接车', '待接车', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '待派工', '待派工', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '施工中', '施工中', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '待质检', '待质检', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '待结算', '待结算', 5, NULL, 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '已离店', '已离店', 6, NULL, 1, NULL, NOW(), NOW(), 0),
+('work_order_status', '已评价', '已评价', 7, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 预约状态
+('appointment_status', '待确认', '待确认', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '已确认', '已确认', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '待接车', '待接车', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '已完成', '已完成', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('appointment_status', '已取消', '已取消', 5, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 会员来源
+('member_source', '公众号', 'mp', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('member_source', '小程序', 'miniapp', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('member_source', 'H5', 'h5', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('member_source', '后台录入', 'admin', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 优惠券类型
+('coupon_type', '满减', '满减', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('coupon_type', '折扣', '折扣', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('coupon_type', '工时抵扣', '工时抵扣', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('coupon_type', '洗车券', '洗车券', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 储值流水类型
+('balance_type', '充值', '充值', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('balance_type', '消费', '消费', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('balance_type', '退款', '退款', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('balance_type', '赠送', '赠送', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 积分流水类型
+('points_type', '获取', '获取', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('points_type', '消耗', '消耗', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 轮胎类型
+('tire_type', '冬胎', '冬胎', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_type', '夏胎', '夏胎', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_type', '四季胎', '四季胎', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+-- 工单明细类型
+('item_type', '服务', '服务', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('item_type', '配件', '配件', 2, NULL, 1, NULL, NOW(), NOW(), 0);
+
+-- ---------------- 数据字典补充（退款状态 / 检查项）----------------
+DELETE FROM `sys_dict_data` WHERE `dict_type` IN ('refund_status','check_item');
+DELETE FROM `sys_dict_type` WHERE `dict_type` IN ('refund_status','check_item');
+
+INSERT INTO `sys_dict_type` (dict_type, dict_name, status, remark, create_time, update_time, deleted) VALUES
+('refund_status', '退款状态', 1, '退款单审核状态', NOW(), NOW(), 0),
+('check_item', '检查项', 1, '接车检查项（可后台维护）', NOW(), NOW(), 0);
+
+INSERT INTO `sys_dict_data` (dict_type, dict_label, dict_value, dict_sort, css_class, status, remark, create_time, update_time, deleted) VALUES
+('refund_status', '待审核', '待审核', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('refund_status', '已通过', '已通过', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('refund_status', '已拒绝', '已拒绝', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('refund_status', '已退款', '已退款', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '机油', '机油', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '机油滤芯', '机油滤芯', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '空气滤芯', '空气滤芯', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '空调滤芯', '空调滤芯', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '汽油滤芯', '汽油滤芯', 5, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '刹车片', '刹车片', 6, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '刹车油', '刹车油', 7, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '防冻液', '防冻液', 8, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '火花塞', '火花塞', 9, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '电瓶', '电瓶', 10, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '变速箱油', '变速箱油', 11, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '轮胎', '轮胎', 12, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '四轮定位', '四轮定位', 13, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '灯光', '灯光', 14, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '雨刷', '雨刷', 15, NULL, 1, NULL, NOW(), NOW(), 0),
+('check_item', '玻璃水', '玻璃水', 16, NULL, 1, NULL, NOW(), NOW(), 0);
+
+-- ---------------- 数据字典补充（券状态 / 活动类型 / 券有效期类型）----------------
+DELETE FROM `sys_dict_data` WHERE `dict_type` IN ('member_coupon_status','activity_type','coupon_valid_type');
+DELETE FROM `sys_dict_type` WHERE `dict_type` IN ('member_coupon_status','activity_type','coupon_valid_type');
+
+INSERT INTO `sys_dict_type` (dict_type, dict_name, status, remark, create_time, update_time, deleted) VALUES
+('member_coupon_status', '会员券状态', 1, '已领优惠券状态', NOW(), NOW(), 0),
+('activity_type', '活动类型', 1, '营销活动类型', NOW(), NOW(), 0),
+('coupon_valid_type', '券有效期类型', 1, '优惠券有效期计算方式', NOW(), NOW(), 0);
+
+INSERT INTO `sys_dict_data` (dict_type, dict_label, dict_value, dict_sort, css_class, status, remark, create_time, update_time, deleted) VALUES
+('member_coupon_status', '未使用', '未使用', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('member_coupon_status', '已使用', '已使用', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('member_coupon_status', '已过期', '已过期', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('activity_type', '拼团', '拼团', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('activity_type', '节日', '节日', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('activity_type', '充值赠', '充值赠', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('activity_type', '新人', '新人', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('coupon_valid_type', '固定日期', '固定', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('coupon_valid_type', '领取后N天', '领取后N天', 2, NULL, 1, NULL, NOW(), NOW(), 0);
+
+-- ---------------- 数据字典补充（存胎状态 / 轮胎位置 / 库存状态）----------------
+DELETE FROM `sys_dict_data` WHERE `dict_type` IN ('tire_storage_status','tire_position','stock_status');
+DELETE FROM `sys_dict_type` WHERE `dict_type` IN ('tire_storage_status','tire_position','stock_status');
+
+INSERT INTO `sys_dict_type` (dict_type, dict_name, status, remark, create_time, update_time, deleted) VALUES
+('tire_storage_status', '存胎状态', 1, '存胎寄存单状态', NOW(), NOW(), 0),
+('tire_position', '轮胎位置', 1, '轮胎安装位置', NOW(), NOW(), 0),
+('stock_status', '库存状态', 1, '货位库存状态', NOW(), NOW(), 0);
+
+INSERT INTO `sys_dict_data` (dict_type, dict_label, dict_value, dict_sort, css_class, status, remark, create_time, update_time, deleted) VALUES
+('tire_storage_status', '已寄存', '已寄存', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '寄存中', '寄存中', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '待取胎', '待取胎', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '已取胎', '已取胎', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_storage_status', '超期', '超期', 5, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_position', '左前', '左前', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_position', '右前', '右前', 2, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_position', '左后', '左后', 3, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_position', '右后', '右后', 4, NULL, 1, NULL, NOW(), NOW(), 0),
+('tire_position', '备胎', '备胎', 5, NULL, 1, NULL, NOW(), NOW(), 0),
+('stock_status', '在库', '在库', 1, NULL, 1, NULL, NOW(), NOW(), 0),
+('stock_status', '已出库', '已出库', 2, NULL, 1, NULL, NOW(), NOW(), 0);

@@ -28,7 +28,9 @@
           <h3>技师产值排行</h3>
           <el-table :data="techRank" stripe>
             <el-table-column type="index" label="#" width="60" />
-            <el-table-column prop="id" label="技师ID" />
+            <el-table-column label="技师">
+              <template #default="{ row }">{{ techName(row.id) }}</template>
+            </el-table-column>
             <el-table-column prop="amount" label="产值">
               <template #default="{ row }">{{ money(row.amount) }}</template>
             </el-table-column>
@@ -105,6 +107,13 @@ const techRank = computed(() => {
   return Object.keys(map).map((id) => ({ id, amount: map[id] })).sort((a, b) => b.amount - a.amount)
 })
 
+/** 技师 id → 姓名（业务界面不出现裸技师ID） */
+const technicians = ref<any[]>([])
+function techName(id: any) {
+  const t = technicians.value.find((x) => String(x.id) === String(id))
+  return t ? t.techName : '技师' + id
+}
+
 function money(v: any) {
   return v === null || v === undefined ? '¥0.00' : '¥' + Number(v).toFixed(2)
 }
@@ -112,6 +121,7 @@ function money(v: any) {
 onMounted(async () => {
   overview.value = await statApi.overview()
   dashboard.value = await statApi.dashboard(30)
+  technicians.value = await request.get('/admin/technician/list')
   loadDaily()
 })
 

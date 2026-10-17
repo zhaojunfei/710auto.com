@@ -86,11 +86,13 @@ const activeTab = ref('user')
 const saving = ref(false)
 
 /* ---------- 用户 ---------- */
+const storeSource = { url: '/admin/store-info', label: 'storeName', value: 'id' }
 const userColumns = [
   { prop: 'username', label: '账号', width: 130 },
   { prop: 'realName', label: '姓名', width: 120 },
   { prop: 'phone', label: '手机号', width: 140 },
   { prop: 'email', label: '邮箱', minWidth: 160 },
+  { prop: 'storeId', label: '所属门店', lookup: storeSource, width: 140 },
   { prop: 'status', label: '状态', width: 80, tag: true },
   { prop: 'lastLoginTime', label: '最后登录', width: 170 },
   { prop: 'createTime', label: '创建时间', width: 170 }
@@ -101,7 +103,7 @@ const userFormFields = [
   { prop: 'realName', label: '真实姓名' },
   { prop: 'phone', label: '手机号' },
   { prop: 'email', label: '邮箱' },
-  { prop: 'storeId', label: '所属门店ID', type: 'number' },
+  { prop: 'storeId', label: '所属门店', type: 'select', source: storeSource },
   { prop: 'avatar', label: '头像', type: 'image', span: 24, dir: 'avatar' },
   { prop: 'status', label: '状态', type: 'switch' },
   { prop: 'remark', label: '备注', type: 'textarea', span: 24 }
@@ -109,7 +111,8 @@ const userFormFields = [
 const userSearchFields = [
   { prop: 'usernameLike', label: '账号' },
   { prop: 'realNameLike', label: '姓名' },
-  { prop: 'phoneLike', label: '手机号' }
+  { prop: 'phoneLike', label: '手机号' },
+  { prop: 'storeId', label: '所属门店', lookup: storeSource }
 ]
 
 const roles = ref<any[]>([])

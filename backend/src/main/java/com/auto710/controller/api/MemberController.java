@@ -56,6 +56,19 @@ public class MemberController {
         return Result.ok(memberBizService.wxLogin(request));
     }
 
+    @Operation(summary = "手机号 + 密码登录（初始密码为手机号后6位）")
+    @PostMapping("/login")
+    public Result<Map<String, Object>> login(@RequestBody Map<String, String> body) {
+        return Result.ok(memberBizService.loginByPhone(body.get("phone"), body.get("password")));
+    }
+
+    @Operation(summary = "会员修改密码")
+    @PostMapping("/change-password")
+    public Result<Boolean> changePassword(@RequestBody Map<String, String> body) {
+        return Result.ok(memberBizService.changePassword(
+                UserContext.userId(), body.get("oldPassword"), body.get("newPassword")));
+    }
+
     @Operation(summary = "会员信息")
     @GetMapping("/profile")
     public Result<Member> profile() {

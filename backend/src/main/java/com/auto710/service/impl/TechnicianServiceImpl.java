@@ -15,10 +15,6 @@ public class TechnicianServiceImpl extends ServiceImpl<TechnicianMapper, Technic
 
     @org.springframework.beans.factory.annotation.Autowired
     private com.auto710.service.SysUserService sysUserService;
-    @org.springframework.beans.factory.annotation.Autowired
-    private com.auto710.service.SysRoleService sysRoleService;
-    @org.springframework.beans.factory.annotation.Autowired
-    private com.auto710.service.SysUserRoleService sysUserRoleService;
 
     @Override
     public boolean save(Technician entity) {
@@ -33,9 +29,14 @@ public class TechnicianServiceImpl extends ServiceImpl<TechnicianMapper, Technic
     }
 
     /**
-     * 添加 / 修改技师时，若未指定「关联系统用户」，则按手机号自动创建并绑定技师登录账号。
-     * <p>绑定规则：用户名 = 手机号，初始密码 = 手机号后 6 位，角色 = TECHNICIAN，所属门店 = 技师门店；
-     * 若手机号已存在同名系统账号则直接绑定，不重复创建。</p>
+     * 关联系统用户：<b>只绑定，不自动创建。</b>
+     * <p>规则：
+     * <ol>
+     *   <li>表单已选择「关联系统用户」时，直接使用所选账号；</li>
+     *   <li>未选择但填写了手机号时，尝试匹配<b>已存在</b>的系统账号（用户名或手机号 = 该手机号）并绑定；</li>
+     *   <li>匹配不到则保持未绑定，由管理员先到「系统管理 - 用户」创建账号，再回到本表单选择关联。</li>
+     * </ol>
+     * 本方法不会向 sys_user / sys_user_role 写入任何数据。</p>
      */
     private void bindSysUser(Technician entity) {
         if (entity.getUserId() != null || cn.hutool.core.util.StrUtil.isBlank(entity.getPhone())) {
@@ -44,31 +45,11 @@ public class TechnicianServiceImpl extends ServiceImpl<TechnicianMapper, Technic
         String phone = entity.getPhone().trim();
         com.auto710.entity.SysUser user = sysUserService.getOne(
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.auto710.entity.SysUser>()
-                        .eq(com.auto710.entity.SysUser::getUsername, phone).last("limit 1"));
-        if (user == null) {
-            user = new com.auto710.entity.SysUser();
-            user.setUsername(phone);
-            user.setRealName(entity.getTechName());
-            user.setPhone(phone);
-            user.setStoreId(entity.getStoreId());
-            user.setStatus(1);
-            user.setRemark("技师「" + entity.getTechName() + "」自动创建");
-            user.setPassword(last6(phone));
-            sysUserService.save(user);
-            com.auto710.entity.SysRole role = sysRoleService.getOne(
-                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.auto710.entity.SysRole>()
-                            .eq(com.auto710.entity.SysRole::getRoleCode, "TECHNICIAN").last("limit 1"));
-            if (role != null) {
-                com.auto710.entity.SysUserRole ur = new com.auto710.entity.SysUserRole();
-                ur.setUserId(user.getId());
-                ur.setRoleId(role.getId());
-                sysUserRoleService.save(ur);
-            }
+                        .and(w -> w.eq(com.auto710.entity.SysUser::getUsername, phone)
+                                .or().eq(com.auto710.entity.SysUser::getPhone, phone))
+                        .last("limit 1"));
+        if (user != null) {
+            entity.setUserId(user.getId());
         }
-        entity.setUserId(user.getId());
-    }
-
-    private String last6(String phone) {
-        return phone.length() <= 6 ? phone : phone.substring(phone.length() - 6);
     }
 }

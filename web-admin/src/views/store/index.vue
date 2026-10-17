@@ -69,7 +69,7 @@ const techForm = [
   { prop: 'level', label: '等级', type: 'select', dict: 'tech_level' },
   { prop: 'storeId', label: '所属门店', type: 'select', source: storeSource },
   { prop: 'phone', label: '手机号' },
-  { prop: 'userId', label: '关联系统用户', type: 'select', source: { url: '/admin/sys-user', label: 'realName', value: 'id' }, tip: '留空则保存时按手机号自动创建技师登录账号（用户名=手机号，初始密码=手机号后6位）' },
+  { prop: 'userId', label: '关联系统用户', type: 'select', source: { url: '/admin/sys-user', label: 'realName', value: 'id' }, tip: '只绑定、不自动创建：请选择「系统管理-用户」中已有的账号；留空但填写了手机号时，会尝试匹配用户名/手机号相同的系统账号。如需新账号，请先到「系统管理-用户」创建' },
   { prop: 'certNo', label: '资质证书编号' },
   { prop: 'qualification', label: '资质证明', type: 'image', span: 24 },
   { prop: 'intro', label: '简介', type: 'textarea', span: 24 },
